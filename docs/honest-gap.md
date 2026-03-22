@@ -6,8 +6,8 @@
 
 | Тема | Статус | Комментарий |
 |------|--------|-------------|
-| **Таргет RX после bootloader** | Не подключено | В ExpressLRS web-flasher после init читается строка с таргетом RX и сверяется с выбранным. У нас `assertFirmwareMatchesDevice` вызывается с **`detectedTarget: undefined`** (`useFlasherSession.ts`), поэтому **несовпадение таргета по ответу RX не блокируется** (только чип из esptool и поля manifest/имени файла). |
-| **Фазы verify / reboot в UI** | Косметика | После `writeFlash` esptool-js выполняет свою проверку/MD5 внутри; в UI фазы `verify` и `reboot` почти сразу переключаются без отдельной логики отчёта. |
+| **Таргет RX после bootloader** | **Сделано для BF/INAV** | После `enterElrsBootloader` вызывается `readBootloaderTargetLine`; строка передаётся в `assertFirmwareMatchesDevice` из `useFlasherSession`. Для **direct UART** и **OTA** по-прежнему нет строки от RX (ожидаемо). Пустой ответ RX не блокирует прошивку. |
+| **Фазы verify / reboot в UI** | **Частично** | `verify` ставится после успешного `writeFlash`; `reboot` — перед `loader.after`; `done` — после `disconnect`. Детализации шагов внутри esptool-js в UI нет. |
 | **Erase flash / полная очистка** | Зафиксировано как `eraseAll: false` | В workflow нет переключателя «стереть чип»; только то, что делает esptool-js при текущих опциях. |
 | **Сторонний JSON (sidecar) к .bin** | Нет в UI | Приоритет метаданных из ТЗ (sidecar рядом с файлом) не реализован — только ZIP manifest и эвристики имени. |
 | **WebUSB в основном потоке прошивки** | Не интегрирован в UI | Класс есть, но сценарий «выбрать WebUSB и прошить тем же мастером, что Serial» в приложении не проведён; esptool-js ожидает **Web Serial `SerialPort`**. |

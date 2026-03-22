@@ -5,7 +5,7 @@ import {
 } from '../errors';
 import type { IFirmwareTransport } from '../transports/types';
 import type { ScopedLogger } from '../logging/FlashLogger';
-import { enterElrsBootloader } from './elrsBootloader';
+import { enterElrsBootloader, readBootloaderTargetLine } from './elrsBootloader';
 import {
   findBetaflightRxUartIndexFromSerialLines,
   parseBetaflightGetValue,
@@ -80,20 +80,27 @@ export interface BetaflightPassthroughOptions {
   logger: ScopedLogger;
 }
 
+export interface PassthroughBootloaderResult {
+  /** Ответ RX после входа в bootloader (может быть пустым) */
+  rxTargetReported: string;
+}
+
 /**
  * Вход в CLI, проверка CRSF/GHST, serialpassthrough, затем ELRS bootloader init.
  */
 export async function runBetaflightPassthrough(
   t: IFirmwareTransport,
   opt: BetaflightPassthroughOptions,
-): Promise<void> {
+): Promise<PassthroughBootloaderResult> {
   const log = opt.logger;
   await writeLine(t, '#');
   const head = await readLinesForMs(t, 600);
   const blob = head.join('');
   if (blob.includes('CCC')) {
     log.info('Уже в passthrough / загрузчик (метка CCC)');
-    return;
+    const rxTargetReported = await readBootloaderTargetLine(t);
+    if (rxTargetReported) log.info(`RX target (bootloader): ${rxTargetReported}`);
+    return { rxTargetReported };
   }
   const hasPrompt = /(^|\n|\r)#\s*$/m.test(blob) || blob.includes('# ');
   if (!hasPrompt) {
@@ -123,4 +130,9 @@ export async function runBetaflightPassthrough(
     opt.bindPhraseKey ?? null,
     (m) => log.info(m),
   );
+
+  const rxTargetReported = await readBootloaderTargetLine(t);
+  if (rxTargetReported) log.info(`RX target (bootloader): ${rxTargetReported}`);
+  else log.info('RX target: пусто (слепая прошивка или таймаут строки)');
+  return { rxTargetReported };
 }

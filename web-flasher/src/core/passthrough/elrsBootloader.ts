@@ -2,6 +2,9 @@
  * Последовательности входа в UART-загрузчик ELRS (как в ExpressLRS/web-flasher passthrough.js).
  */
 
+import type { IFirmwareTransport } from '../transports/types';
+
+
 function ord(c: string): number {
   return c.charCodeAt(0);
 }
@@ -64,4 +67,20 @@ export async function enterElrsBootloader(
   await new Promise((r) => setTimeout(r, 200));
   await write(getElrsBootloaderInitSeq('CRSF', bindPhraseKey));
   await new Promise((r) => setTimeout(r, 200));
+}
+
+/**
+ * После init RX часто присылает строку с именем таргета (см. web-flasher `reset_to_bootloader`).
+ * Пустая строка — нормально («слепая» прошивка); вызывающий решает, как сравнивать с manifest.
+ */
+export async function readBootloaderTargetLine(t: IFirmwareTransport, timeoutMs = 450): Promise<string> {
+  await new Promise((r) => setTimeout(r, 150));
+  try {
+    const line = await t.readLine(['\n'], timeoutMs);
+    return line
+      .replace(/\r/g, '')
+      .trim();
+  } catch {
+    return '';
+  }
 }

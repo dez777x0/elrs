@@ -167,24 +167,28 @@ export function useFlasherSession() {
 
       const t = serialTransport.value ?? (await connectSerial());
 
+      let detectedTarget: string | undefined;
+
       if (pathMode.value === 'betaflight') {
         phase.value = 'passthrough';
         const uartStr = prefs.value.expert.uartIndex.trim();
-        await runBetaflightPassthrough(t, {
+        const r = await runBetaflightPassthrough(t, {
           baud: prefs.value.expert.passthroughBaud,
           halfDuplex: prefs.value.expert.halfDuplex,
           manualUartIndex: uartStr === '' ? undefined : parseInt(uartStr, 10),
           logger: logger.child('BF'),
         });
+        detectedTarget = r.rxTargetReported.trim() || undefined;
       } else if (pathMode.value === 'inav') {
         phase.value = 'passthrough';
         const uartStr = prefs.value.expert.uartIndex.trim();
-        await runInavPassthrough(t, {
+        const r = await runInavPassthrough(t, {
           baud: prefs.value.expert.passthroughBaud,
           halfDuplex: prefs.value.expert.halfDuplex,
           manualUartIndex: uartStr === '' ? undefined : parseInt(uartStr, 10),
           logger: logger.child('INAV'),
         });
+        detectedTarget = r.rxTargetReported.trim() || undefined;
       } else {
         phase.value = 'bootloader';
         await tryDtrRtsClassic(t, logger.child('reset'));
@@ -207,18 +211,33 @@ export function useFlasherSession() {
         firmwareChip: parsed.value.effectiveChip,
         detectedChip: prepared.chipName,
         firmwareTarget: parsed.value.effectiveTarget,
-        detectedTarget: undefined,
+        detectedTarget,
         forceFlashConfirmed: prefs.value.expert.forceFlash,
       });
 
+      const nFiles = parsed.value.segments.length;
       phase.value = 'flash';
+      progressFlash.value = 0;
       await writeSegmentsWithLoader(prepared, parsed.value.segments, {
         logger,
         eraseAll: false,
+        hooks: {
+          onFlashProgress: (fileIndex, written, total) => {
+            const part = total > 0 ? written / total : 0;
+            progressFlash.value = Math.min(99, Math.round(((fileIndex + part) / Math.max(1, nFiles)) * 100));
+          },
+          onFlashWriteSettled: () => {
+            progressFlash.value = 100;
+            phase.value = 'verify';
+          },
+          onDeviceRebootInvoke: () => {
+            phase.value = 'reboot';
+          },
+          onTransportClosed: () => {
+            phase.value = 'done';
+          },
+        },
       });
-      phase.value = 'verify';
-      phase.value = 'reboot';
-      phase.value = 'done';
     } catch (e) {
       phase.value = 'error';
       const msg = e instanceof FlasherError ? `${e.message}${e.actionableHint ? ' — ' + e.actionableHint : ''}` : String(e);

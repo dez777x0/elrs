@@ -1,7 +1,8 @@
 import { CliPromptNotFoundError, InavConfigInvalidError, RxUartNotFoundError } from '../errors';
 import type { ScopedLogger } from '../logging/FlashLogger';
 import type { IFirmwareTransport } from '../transports/types';
-import { enterElrsBootloader } from './elrsBootloader';
+import { enterElrsBootloader, readBootloaderTargetLine } from './elrsBootloader';
+import type { PassthroughBootloaderResult } from './betaflightPassthrough';
 import { findBetaflightRxUartIndexFromSerialLines, parseInavVersionBanner } from './cliParsers';
 
 const enc = new TextEncoder();
@@ -38,7 +39,10 @@ export interface InavPassthroughOptions {
 /**
  * INAV использует схожий CLI; serial / serialpassthrough совместимы с CF/BF во многих сборках.
  */
-export async function runInavPassthrough(t: IFirmwareTransport, opt: InavPassthroughOptions): Promise<void> {
+export async function runInavPassthrough(
+  t: IFirmwareTransport,
+  opt: InavPassthroughOptions,
+): Promise<PassthroughBootloaderResult> {
   const log = opt.logger;
   await writeLine(t, '#');
   let lines = await readLinesForMs(t, 600);
@@ -77,4 +81,9 @@ export async function runInavPassthrough(t: IFirmwareTransport, opt: InavPassthr
     opt.bindPhraseKey ?? null,
     (m) => log.info(m),
   );
+
+  const rxTargetReported = await readBootloaderTargetLine(t);
+  if (rxTargetReported) log.info(`RX target (bootloader): ${rxTargetReported}`);
+  else log.info('RX target: пусто (слепая прошивка или таймаут строки)');
+  return { rxTargetReported };
 }

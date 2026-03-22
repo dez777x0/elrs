@@ -32,6 +32,17 @@ export interface PreparedEspLoader {
   disconnect: () => Promise<void>;
 }
 
+/** События для UI: фазы verify / reboot привязаны к завершению writeFlash и вызову after(). */
+export interface FlashWriteHooks {
+  onFlashProgress?: (fileIndex: number, written: number, total: number) => void;
+  /** Сразу после успешного `writeFlash` (внутри esptool-js уже мог быть MD5). */
+  onFlashWriteSettled?: () => void;
+  /** Перед `loader.after(reset)`. */
+  onDeviceRebootInvoke?: () => void;
+  /** После `transport.disconnect()`. */
+  onTransportClosed?: () => void;
+}
+
 /** Подключение к ROM, detectChip, загрузка stub — до проверки совместимости прошивки. */
 export async function prepareEspLoader(port: SerialPort, opt: EspFlashEngineOptions): Promise<PreparedEspLoader> {
   const scope = opt.logger.child('espFlashEngine');
@@ -79,11 +90,12 @@ export async function prepareEspLoader(port: SerialPort, opt: EspFlashEngineOpti
 export async function writeSegmentsWithLoader(
   prepared: PreparedEspLoader,
   segments: FirmwareSegment[],
-  opt: Pick<EspFlashEngineOptions, 'logger' | 'eraseAll'>,
+  opt: Pick<EspFlashEngineOptions, 'logger' | 'eraseAll'> & { hooks?: FlashWriteHooks },
 ): Promise<void> {
   const log = opt.logger.child('espFlashEngine');
   const { loader } = prepared;
   const chipName = prepared.chipName;
+  const hooks = opt.hooks;
 
   const fileArray = segments.map((s) => ({
     data: loader.ui8ToBstr(s.data),
@@ -101,12 +113,16 @@ export async function writeSegmentsWithLoader(
       eraseAll: opt.eraseAll ?? false,
       compress: true,
       calculateMD5Hash: (image) => md5Bytes(loader.bstrToUi8(image)),
+      reportProgress: hooks?.onFlashProgress,
     });
   } catch (e) {
     throw new VerificationFailedError(`Ошибка записи/проверки flash: ${String(e)}`);
   }
 
+  hooks?.onFlashWriteSettled?.();
+
   const after: EspLoaderAfterMode = chipName.startsWith('ESP32') ? 'hard_reset' : 'soft_reset';
+  hooks?.onDeviceRebootInvoke?.();
   try {
     await loader.after(after);
   } catch {
@@ -118,6 +134,7 @@ export async function writeSegmentsWithLoader(
   } catch {
     /* */
   }
+  hooks?.onTransportClosed?.();
 }
 
 /** Полный цикл без паузы на проверку метаданных (тесты / простые сценарии). */
