@@ -5,3 +5,4 @@ export * from './WebUSBTransport';
 export * from './OtaHttpTransport';
 export * from './NativeBridgeTransport';
 export * from './MockTransport';
+export * from './nativeBridgeGlobal';

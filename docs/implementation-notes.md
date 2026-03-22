@@ -38,4 +38,10 @@ npm run build
 
 ## Workers
 
-Каталог `web-flasher/src/workers/` зарезервирован под тяжёлый хеш и разбор больших архивов в отдельном потоке при необходимости; сейчас хеширование выполняется в основном потоке (`crypto.subtle` / spark-md5).
+- **`firmware-hash.worker.ts`**: SHA-256 для больших буферов; вызывается из `sha256BytesAuto` (порог по умолчанию 2 MiB в `hashes.ts`).
+- Разбор ZIP по-прежнему в основном потоке (JSZip).
+
+## Native bridge
+
+- Глобал `window.__ELRS_FLASHER_NATIVE__`, хелперы `getNativeBridgeFromWindow` / `installNativeBridge`: см. **`docs/native-bridge.md`**.
+- Опционально **`getSerialPortForEsptool()`** для передачи порта в esptool-js после passthrough.

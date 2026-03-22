@@ -9,6 +9,7 @@
 | **Этап 0** (честный MVP) | В основном выполнен: сборка, тесты, доки, PWA; CI в репозитории — по усмотрению команды. |
 | **Этап 1 P0** | **Сделано:** таргет RX (BF/INAV), фазы verify/reboot, прогресс. |
 | **Этап 1 P1/P2** | **Частично:** erase all, sidecar JSON, пресеты пути OTA, BF SPI RX, двойной UART reset. Дальше — CI, ручной чек-лист железа, EdgeTX (если нужен). |
+| **Этап 2** | **Сделано:** Native bridge (док + UI + `getSerialPortForEsptool`), честный WebUSB в UI, Worker SHA-256 для больших файлов. |
 
 ---
 
@@ -45,9 +46,9 @@
 
 | Приоритет | Работа |
 |-----------|--------|
-| P1 | **NativeBridgeTransport:** короткий контракт для оболочки (JSON/message schema) + пример в доке |
-| P2 | Решение по **WebUSB:** либо отдельный экспериментальный поток с честным UI, либо явный «не поддерживаем для esptool-js» в gap |
-| P2 | **Worker** для SHA-256/ZIP на больших файлах (>N МБ), порог в настройках или авто |
+| P1 | **NativeBridgeTransport:** контракт **[native-bridge.md](./native-bridge.md)**, глобал `__ELRS_FLASHER_NATIVE__`, Expert «UART backend», опциональный **`getSerialPortForEsptool`**. |
+| P2 | **WebUSB:** честные бейджи + кнопка проверки в Expert; esptool-js по-прежнему только Web Serial. |
+| P2 | **Worker** SHA-256 при размере ≥ 2 MiB (`sha256BytesAuto`). |
 
 ---
 

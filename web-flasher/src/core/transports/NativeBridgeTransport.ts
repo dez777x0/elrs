@@ -13,6 +13,8 @@ export interface NativeBridgeHandlers {
   readLine?: (delimiters: string[], timeoutMs: number) => Promise<string>;
   setDTR?: (state: boolean) => Promise<void>;
   setRTS?: (state: boolean) => Promise<void>;
+  /** Для esptool-js после passthrough; см. docs/native-bridge.md */
+  getSerialPortForEsptool?: () => SerialPort | null | undefined | Promise<SerialPort | null | undefined>;
 }
 
 export class NativeBridgeTransport implements IFirmwareTransport {
@@ -70,5 +72,12 @@ export class NativeBridgeTransport implements IFirmwareTransport {
   async setRTS(state: boolean): Promise<void> {
     if (!this.active) throw new DeviceDisconnectedError('Native bridge не подключён.');
     await this.handlers.setRTS?.(state);
+  }
+
+  async getSerialPortForEsptool(): Promise<SerialPort | null> {
+    const fn = this.handlers.getSerialPortForEsptool;
+    if (!fn) return null;
+    const p = await fn();
+    return p ?? null;
   }
 }

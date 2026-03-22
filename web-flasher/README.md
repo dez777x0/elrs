@@ -31,3 +31,5 @@
 **Что ещё не совпадает с целевой спецификацией:** [../docs/honest-gap.md](../docs/honest-gap.md).
 
 **Roadmap до релиза:** [../docs/release-roadmap.md](../docs/release-roadmap.md).
+
+**Native bridge (оболочка / iOS):** [../docs/native-bridge.md](../docs/native-bridge.md).

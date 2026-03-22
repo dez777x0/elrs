@@ -2,6 +2,8 @@ import { computed, ref, shallowRef, watch } from 'vue';
 import { FlashLogger } from '@/core/logging/FlashLogger';
 import { parseFirmwareFile, type ParsedFirmwarePackage } from '@/core/firmware/parseFirmwareInput';
 import { WebSerialTransport } from '@/core/transports/WebSerialTransport';
+import { NativeBridgeTransport } from '@/core/transports/NativeBridgeTransport';
+import { getNativeBridgeFromWindow, nativeBridgeSerialPortAvailable } from '@/core/transports/nativeBridgeGlobal';
 import { OtaHttpTransport } from '@/core/transports/OtaHttpTransport';
 import { getPlatformCapabilities } from '@/core/transports/platformCapabilities';
 import { runBetaflightPassthrough } from '@/core/passthrough/betaflightPassthrough';
@@ -9,7 +11,7 @@ import { runInavPassthrough } from '@/core/passthrough/inavPassthrough';
 import { assertFirmwareMatchesDevice } from '@/core/flash/compatibility';
 import { prepareEspLoader, writeSegmentsWithLoader } from '@/core/flash/espFlashEngine';
 import { runUartResetStrategies } from '@/core/bootloader/directUartReset';
-import { FlasherError } from '@/core/errors';
+import { FlasherError, TransportUnavailableError } from '@/core/errors';
 
 export type FlashPhase =
   | 'idle'
@@ -31,6 +33,8 @@ interface Prefs {
   otaHost: string;
   /** Путь относительно хоста OTA, напр. update */
   otaUploadPath: string;
+  /** UART: браузер Web Serial или нативный мост (оболочка) */
+  uartBackend: 'web-serial' | 'native-bridge';
   expert: {
     forceFlash: boolean;
     halfDuplex: boolean;
@@ -53,6 +57,7 @@ function loadPrefs(): Prefs {
     return {
       ...d,
       ...p,
+      uartBackend: p.uartBackend === 'native-bridge' ? 'native-bridge' : d.uartBackend,
       expert: { ...d.expert, ...p.expert },
       recent: Array.isArray(p.recent) ? p.recent : d.recent,
     };
@@ -66,6 +71,7 @@ function defaultPrefs(): Prefs {
   return {
     otaHost: 'http://10.0.0.1',
     otaUploadPath: 'update',
+    uartBackend: 'web-serial',
     expert: {
       forceFlash: false,
       halfDuplex: false,
@@ -104,15 +110,30 @@ export function useFlasherSession() {
   const sidecarFile = shallowRef<File | null>(null);
   const parsed = shallowRef<ParsedFirmwarePackage | null>(null);
   const lastError = ref<string | null>(null);
-  const serialTransport = shallowRef<WebSerialTransport | null>(null);
+  const serialTransport = shallowRef<WebSerialTransport | NativeBridgeTransport | null>(null);
   const progressFlash = ref(0);
+
+  const nativeBridgeAvailable = computed(() => getNativeBridgeFromWindow() !== null);
+
+  const nativeEsptoolReady = computed(() => nativeBridgeSerialPortAvailable());
+
+  const canUseUartFlash = computed(() => {
+    if (prefs.value.uartBackend === 'native-bridge') return nativeBridgeAvailable.value;
+    return platform.hasWebSerialApi && platform.wiredSerialLikelyWorks;
+  });
 
   const transportBadge = computed(() => {
     if (pathMode.value === 'ota') return 'OTA / Wi‑Fi';
-    if (pathMode.value === 'betaflight') return 'Betaflight passthrough';
-    if (pathMode.value === 'inav') return 'INAV passthrough';
-    if (!platform.wiredSerialLikelyWorks) return 'Проводной UART недоступен (платформа)';
-    return 'Direct UART';
+    const back = prefs.value.uartBackend === 'native-bridge' ? 'Native bridge' : 'Web Serial';
+    if (pathMode.value === 'betaflight') return `Betaflight passthrough (${back})`;
+    if (pathMode.value === 'inav') return `INAV passthrough (${back})`;
+    if (prefs.value.uartBackend === 'web-serial' && !platform.wiredSerialLikelyWorks) {
+      return 'Web Serial недоступен (платформа)';
+    }
+    if (prefs.value.uartBackend === 'native-bridge' && !nativeBridgeAvailable.value) {
+      return 'Native bridge не обнаружен';
+    }
+    return `Direct UART (${back})`;
   });
 
   const wiredAvailable = computed(() => platform.hasWebSerialApi && platform.wiredSerialLikelyWorks);
@@ -138,16 +159,52 @@ export function useFlasherSession() {
     },
   );
 
-  async function connectSerial(): Promise<WebSerialTransport> {
+  async function clearSerialConnection(): Promise<void> {
+    const cur = serialTransport.value;
+    if (!cur) return;
+    try {
+      await cur.disconnect();
+    } catch {
+      /* */
+    }
+    serialTransport.value = null;
+  }
+
+  async function connectSerial(): Promise<WebSerialTransport | NativeBridgeTransport> {
     phase.value = 'connect';
+    if (prefs.value.uartBackend === 'native-bridge') {
+      const host = getNativeBridgeFromWindow();
+      if (!host) {
+        throw new TransportUnavailableError(
+          'Native bridge не найден: ожидается window.__ELRS_FLASHER_NATIVE__',
+          'См. docs/native-bridge.md',
+        );
+      }
+      const t = new NativeBridgeTransport(host, logger);
+      await t.connect();
+      serialTransport.value = t;
+      return t;
+    }
+    const prev =
+      serialTransport.value instanceof WebSerialTransport ? serialTransport.value.getSerialPort() : undefined;
     const t = new WebSerialTransport({
       logger,
       baudRate: 115200,
-      port: serialTransport.value?.getSerialPort() ?? undefined,
+      port: prev ?? undefined,
     });
     await t.connect();
     serialTransport.value = t;
     return t;
+  }
+
+  async function probeWebUsb(): Promise<void> {
+    const { WebUSBTransport } = await import('@/core/transports/WebUSBTransport');
+    const t = new WebUSBTransport({ logger });
+    await t.connect();
+    await t.disconnect();
+    logger
+      .child('WebUSB')
+      .info('Проверка WebUSB: устройство открыто и закрыто. Прошивка ESP здесь идёт через Web Serial + esptool-js, не через WebUSB.');
   }
 
   async function runWorkflow(): Promise<void> {
@@ -183,8 +240,12 @@ export function useFlasherSession() {
         return;
       }
 
-      if (!wiredAvailable.value) {
-        throw new Error('На этой платформе проводная прошивка недоступна. Используйте OTA.');
+      if (!canUseUartFlash.value) {
+        throw new Error(
+          prefs.value.uartBackend === 'native-bridge'
+            ? 'Native bridge не доступен. Задайте window.__ELRS_FLASHER_NATIVE__ или используйте OTA.'
+            : 'На этой платформе Web Serial недоступен. Используйте OTA или оболочку с Native bridge.',
+        );
       }
 
       const t = serialTransport.value ?? (await connectSerial());
@@ -217,7 +278,22 @@ export function useFlasherSession() {
       }
 
       phase.value = 'bootloader';
-      const port = await t.handoffToEsptool();
+      let port: SerialPort;
+      if (t instanceof WebSerialTransport) {
+        port = await t.handoffToEsptool();
+      } else if (t instanceof NativeBridgeTransport) {
+        const sp = await t.getSerialPortForEsptool();
+        if (!sp) {
+          throw new TransportUnavailableError(
+            'Native bridge: не реализован getSerialPortForEsptool() — esptool-js требует SerialPort как у Web Serial API.',
+            'См. docs/native-bridge.md или полифилл navigator.serial.',
+          );
+        }
+        await t.disconnect();
+        port = sp;
+      } else {
+        throw new Error('Неизвестный UART-транспорт');
+      }
 
       phase.value = 'detect_chip';
       const prepared = await prepareEspLoader(port, {
@@ -305,6 +381,12 @@ export function useFlasherSession() {
     expertOpen.value = !expertOpen.value;
   }
 
+  function setUartBackend(b: 'web-serial' | 'native-bridge'): void {
+    void clearSerialConnection();
+    prefs.value.uartBackend = b;
+    savePrefs(prefs.value);
+  }
+
   return {
     platform,
     logger,
@@ -321,8 +403,14 @@ export function useFlasherSession() {
     progressFlash,
     transportBadge,
     wiredAvailable,
+    nativeBridgeAvailable,
+    nativeEsptoolReady,
+    canUseUartFlash,
     parseSelectedFile,
     connectSerial,
+    clearSerialConnection,
+    probeWebUsb,
+    setUartBackend,
     runWorkflow,
     copyLogs,
     downloadLogs,

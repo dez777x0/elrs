@@ -189,6 +189,18 @@ body {
   color: #58a6ff;
 }
 
+.webusb-row {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expert-hint.inline {
+  margin: 0;
+}
+
 .summary ul {
   margin: 0;
   padding-left: 1.1rem;

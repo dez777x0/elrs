@@ -10,7 +10,7 @@
 | **Фазы verify / reboot в UI** | **Частично** | `verify` ставится после успешного `writeFlash`; `reboot` — перед `loader.after`; `done` — после `disconnect`. Детализации шагов внутри esptool-js в UI нет. |
 | **Erase flash / полная очистка** | **Expert** | Чекбокс «Полное стирание flash (erase all)» в Expert Mode, прокидывается в esptool-js. |
 | **Сторонний JSON (sidecar) к .bin** | **Сделано (Expert)** | Отдельный выбор `.json` в Expert; при наличии manifest в ZIP sidecar игнорируется. Авто-поиск `*.json` без второго выбора файла в браузере не делался. |
-| **WebUSB в основном потоке прошивки** | Не интегрирован в UI | Класс есть, но сценарий «выбрать WebUSB и прошить тем же мастером, что Serial» в приложении не проведён; esptool-js ожидает **Web Serial `SerialPort`**. |
+| **WebUSB в основном потоке прошивки** | **Намеренно не основной путь** | Класс `WebUSBTransport` остаётся; в UI — честные бейджи и кнопка проверки в Expert. **esptool-js** по-прежнему только через **Web Serial** (или `getSerialPortForEsptool` из native bridge). |
 | **NativeBridgeTransport** | Только интерфейс | Нет ни демо-интеграции с WebView, ни документации по контракту сообщений для оболочки. |
 | **Workers** | Пусто | Хеш и разбор ZIP идут в main thread; для очень больших файлов возможны фризы UI. |
 | **EdgeTX passthrough** | Нет | В оригинальном web-flasher есть ветки EdgeTX; в нашем ядре их нет. |
@@ -41,6 +41,14 @@
 | Windows Chromium + UART | Основной рабочий путь по задумке; не гарантируется для каждого адаптера без ручной проверки. |
 | Android | `navigator.serial` зависит от сборки браузера; UI помечает доступность, но стабильность не сертифицирована. |
 | iOS Safari | Проводной UART **не заявляется**; OTA путь есть, но успех зависит от точного URL и режима RX. |
+
+## Этап 2 (платформы / транспорты) — состояние
+
+| Тема | Статус |
+|------|--------|
+| **Native bridge** | **Сделано:** [native-bridge.md](./native-bridge.md), глобал, Expert UART backend, `getSerialPortForEsptool` для esptool-js. |
+| **WebUSB** | **Честный UI:** бейдж + проверка в Expert; не путь прошивки ESP для esptool-js. |
+| **Worker SHA-256** | **Сделано:** ≥ 2 MiB в worker, иначе main thread. |
 
 ## Документация и структура
 

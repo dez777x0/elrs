@@ -22,6 +22,9 @@ const {
   progressFlash,
   transportBadge,
   wiredAvailable,
+  canUseUartFlash,
+  nativeBridgeAvailable,
+  nativeEsptoolReady,
   connectSerial,
   runWorkflow,
   copyLogs,
@@ -31,6 +34,8 @@ const {
   applyOtaPathPreset,
   persistPrefs,
   toggleExpert,
+  probeWebUsb,
+  setUartBackend,
 } = useFlasherSession();
 
 function onPickFile(e: Event): void {
@@ -69,6 +74,20 @@ async function onFlashClick(): Promise<void> {
   }
   await runWorkflow();
 }
+
+function onUartBackendChange(ev: Event): void {
+  const v = (ev.target as HTMLSelectElement).value;
+  if (v === 'web-serial' || v === 'native-bridge') setUartBackend(v);
+}
+
+async function onProbeWebUsb(): Promise<void> {
+  try {
+    await probeWebUsb();
+    alert('WebUSB: тест OK (см. лог). Прошивка ESP в этом приложении использует Web Serial + esptool-js, не WebUSB.');
+  } catch (e) {
+    alert(String(e));
+  }
+}
 </script>
 
 <template>
@@ -78,8 +97,11 @@ async function onFlashClick(): Promise<void> {
       <p class="sub">Локальный файл → детект → прошивка (ESP / ExpressLRS)</p>
       <div class="badges">
         <span class="badge">{{ transportBadge }}</span>
-        <span v-if="!wiredAvailable" class="badge warn">Проводной UART: недоступен в этом браузере</span>
-        <span v-if="platform.hasWebUsbApi" class="badge muted">WebUSB: есть API</span>
+        <span v-if="pathMode !== 'ota' && !canUseUartFlash" class="badge warn">UART-прошивка сейчас недоступна (Web Serial или Native bridge)</span>
+        <span v-if="prefs.uartBackend === 'native-bridge' && !nativeEsptoolReady" class="badge warn">
+          Native bridge без getSerialPortForEsptool — esptool не сможет прошить (см. docs/native-bridge.md)
+        </span>
+        <span v-if="platform.hasWebUsbApi" class="badge muted">WebUSB API есть (не путь прошивки ESP здесь)</span>
       </div>
     </header>
 
@@ -99,18 +121,20 @@ async function onFlashClick(): Promise<void> {
       </section>
 
       <div class="row">
-        <button type="button" class="btn secondary" :disabled="!wiredAvailable" @click="connectSerial()">
-          Подключить устройство (Serial)
+        <button type="button" class="btn secondary" :disabled="pathMode === 'ota' || !canUseUartFlash" @click="connectSerial()">
+          Подключить устройство (UART)
         </button>
-        <button type="button" class="btn" :disabled="!selectedFile" @click="onFlashClick">Прошить</button>
+        <button type="button" class="btn" :disabled="!selectedFile || (pathMode !== 'ota' && !canUseUartFlash)" @click="onFlashClick">
+          Прошить
+        </button>
       </div>
 
       <section class="panel">
         <h2>Режим</h2>
         <div class="modes">
-          <label><input v-model="pathMode" type="radio" value="direct" :disabled="!wiredAvailable" /> Прямой UART</label>
-          <label><input v-model="pathMode" type="radio" value="betaflight" :disabled="!wiredAvailable" /> Betaflight passthrough</label>
-          <label><input v-model="pathMode" type="radio" value="inav" :disabled="!wiredAvailable" /> INAV passthrough</label>
+          <label><input v-model="pathMode" type="radio" value="direct" :disabled="!canUseUartFlash" /> Прямой UART</label>
+          <label><input v-model="pathMode" type="radio" value="betaflight" :disabled="!canUseUartFlash" /> Betaflight passthrough</label>
+          <label><input v-model="pathMode" type="radio" value="inav" :disabled="!canUseUartFlash" /> INAV passthrough</label>
           <label><input v-model="pathMode" type="radio" value="ota" /> OTA / Wi‑Fi</label>
         </div>
         <div v-if="pathMode === 'ota'" class="ota">
@@ -183,6 +207,16 @@ async function onFlashClick(): Promise<void> {
       <section class="panel">
         <button type="button" class="btn secondary" @click="toggleExpert">{{ expertOpen ? 'Скрыть' : 'Expert Mode' }}</button>
         <div v-if="expertOpen" class="expert">
+          <label
+            >UART backend
+            <select :value="prefs.uartBackend" @change="onUartBackendChange($event)">
+              <option value="web-serial">Web Serial (Chromium)</option>
+              <option value="native-bridge" :disabled="!nativeBridgeAvailable">Native bridge (оболочка)</option>
+            </select></label
+          >
+          <p v-if="prefs.uartBackend === 'web-serial' && !wiredAvailable" class="expert-hint">
+            Web Serial на этой платформе недоступен — переключитесь на OTA или соберите приложение с Native bridge.
+          </p>
           <label>Force Flash <input v-model="prefs.expert.forceFlash" type="checkbox" @change="persistPrefs" /></label>
           <label v-if="prefs.expert.forceFlash" class="danger">
             <input v-model="forceConfirm" type="checkbox" /> Я понимаю риск окирпичивания
@@ -206,6 +240,11 @@ async function onFlashClick(): Promise<void> {
           <span v-if="sidecarFile" class="sidecar-name">{{ sidecarFile.name }}</span>
           <button v-if="sidecarFile" type="button" class="btn small" @click="clearSidecar">Сбросить sidecar</button>
           <input ref="sidecarInput" type="file" accept=".json,application/json" class="hidden" @change="onPickSidecar" />
+          <p class="expert-hint">Большие файлы: SHA-256 считается в Worker при размере ≥ 2 MiB.</p>
+          <div v-if="platform.hasWebUsbApi" class="webusb-row">
+            <button type="button" class="btn secondary small" @click="onProbeWebUsb">Проверить WebUSB (эксперимент)</button>
+            <span class="expert-hint inline">Не используется для esptool-js.</span>
+          </div>
         </div>
       </section>
     </main>

@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { FirmwareManifestInvalidError } from '../errors';
 import { FlashLogger } from '../logging/FlashLogger';
 import { hintsFromFilename } from './filenameHeuristics';
-import { md5Bytes, sha256Bytes } from './hashes';
+import { md5Bytes, sha256BytesAuto } from './hashes';
 import { parseManifestJson, type FirmwareManifest } from './manifest';
 import { coerceFlashOffset, parseSidecarJson, type SidecarMetadata } from './sidecar';
 import type { ScopedLogger } from '../logging/FlashLogger';
@@ -67,7 +67,7 @@ async function tryParseZip(file: File, log: FlashLogger): Promise<ParsedFirmware
     }
   }
   const cat = concatSegments(segments);
-  const sha256 = await sha256Bytes(cat);
+  const sha256 = await sha256BytesAuto(cat);
   const md5 = md5Bytes(cat);
   const hints = hintsFromFilename(file.name);
   return {
@@ -133,7 +133,7 @@ export async function parseFirmwareFile(
   } else {
     const data = new Uint8Array(await file.arrayBuffer());
     const hints = hintsFromFilename(file.name);
-    const sha256 = await sha256Bytes(data);
+    const sha256 = await sha256BytesAuto(data);
     const md5 = md5Bytes(data);
     log.info(`Одиночный .bin: ${file.name} (${data.length} байт)`);
     pkg = {
