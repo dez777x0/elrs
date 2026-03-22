@@ -14,15 +14,14 @@ describe('EdgeTX passthrough integration (scripted mock)', () => {
       halfDuplex: false,
       backpack: false,
       logger: log.child('ETX'),
+      skipHardwareDelays: true,
     });
 
     expect(r.rxTargetReported).toBe('EDGE_TX_RX_NAME');
     expect(t.txWritten.some((b) => new TextDecoder().decode(b).includes('serialpassthrough'))).toBe(true);
   });
 
-  it(
-    'backpack path sends rfmod power commands',
-    async () => {
+  it('backpack path sends rfmod power commands', async () => {
     const log = new FlashLogger();
     const t = new EdgeTxScriptedMock(log);
     await t.connect();
@@ -32,11 +31,10 @@ describe('EdgeTX passthrough integration (scripted mock)', () => {
       halfDuplex: false,
       backpack: true,
       logger: log.child('ETX'),
+      skipHardwareDelays: true,
     });
 
     const blob = t.txWritten.map((b) => new TextDecoder().decode(b)).join('');
     expect(blob).toContain('rfmod 0 power off');
-    },
-    15_000,
-  );
+  });
 });

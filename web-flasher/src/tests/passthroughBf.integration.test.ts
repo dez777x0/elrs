@@ -20,6 +20,6 @@ describe('Betaflight passthrough integration (scripted mock)', () => {
       expect(r.rxTargetReported).toBe('INTEGRATION_RX_TARGET');
       expect(t.txWritten.length).toBeGreaterThan(4);
     },
-    12_000,
+    8_000,
   );
 });

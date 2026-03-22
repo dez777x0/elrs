@@ -1,23 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FlashLogger } from '@/core/logging/FlashLogger';
+import { DEFAULT_CLI_LINE_IDLE_FLUSH_MS, readLinesForMs } from '@/core/passthrough/cliReadLines';
 import { BetaflightScriptedMock } from './helpers/BetaflightScriptedMock';
-
-async function readLinesForMs(t: BetaflightScriptedMock, totalMs: number): Promise<string[]> {
-  const out: string[] = [];
-  const deadline = Date.now() + totalMs;
-  let buf = '';
-  while (Date.now() < deadline) {
-    const chunk = await t.read(512, Math.min(200, deadline - Date.now()));
-    if (!chunk.length) continue;
-    for (let i = 0; i < chunk.length; i++) buf += String.fromCharCode(chunk[i]);
-    let idx: number;
-    while ((idx = buf.indexOf('\n')) >= 0) {
-      out.push(buf.slice(0, idx + 1));
-      buf = buf.slice(idx + 1);
-    }
-  }
-  return out;
-}
 
 describe('BetaflightScriptedMock', () => {
   it('CLI preamble then get serialrx_provider (как в runBetaflightPassthrough)', async () => {
@@ -25,9 +9,9 @@ describe('BetaflightScriptedMock', () => {
     await t.connect();
     const enc = new TextEncoder();
     await t.write(enc.encode('#\r\n'));
-    await readLinesForMs(t, 600);
+    await readLinesForMs(t, 600, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     await t.write(enc.encode('get serialrx_provider\r\n'));
-    const lines = await readLinesForMs(t, 1200);
+    const lines = await readLinesForMs(t, 1200, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     expect(lines.join('')).toContain('CRSF');
   });
 
@@ -36,7 +20,7 @@ describe('BetaflightScriptedMock', () => {
     await t.connect();
     const enc = new TextEncoder();
     await t.write(enc.encode('get serialrx_provider\r\n'));
-    const lines = await readLinesForMs(t, 500);
+    const lines = await readLinesForMs(t, 500, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     expect(lines.join('')).toContain('serialrx_provider');
     expect(lines.join('')).toContain('CRSF');
   });

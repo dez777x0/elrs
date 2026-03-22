@@ -10,6 +10,7 @@ import {
   findBetaflightRxUartIndexFromSerialLines,
   parseBetaflightGetValue,
 } from './cliParsers';
+import { DEFAULT_CLI_LINE_IDLE_FLUSH_MS, readLinesForMs } from './cliReadLines';
 
 const enc = new TextEncoder();
 
@@ -17,26 +18,9 @@ async function writeLine(t: IFirmwareTransport, s: string): Promise<void> {
   await t.write(enc.encode(s.endsWith('\n') ? s : s + '\r\n'));
 }
 
-async function readLinesForMs(t: IFirmwareTransport, totalMs: number): Promise<string[]> {
-  const out: string[] = [];
-  const deadline = Date.now() + totalMs;
-  let buf = '';
-  while (Date.now() < deadline) {
-    const chunk = await t.read(512, Math.min(200, deadline - Date.now()));
-    if (!chunk.length) continue;
-    for (let i = 0; i < chunk.length; i++) buf += String.fromCharCode(chunk[i]);
-    let idx: number;
-    while ((idx = buf.indexOf('\n')) >= 0) {
-      out.push(buf.slice(0, idx + 1));
-      buf = buf.slice(idx + 1);
-    }
-  }
-  return out;
-}
-
 async function getCliValue(t: IFirmwareTransport, key: string, log: ScopedLogger): Promise<string | null> {
   await writeLine(t, `get ${key}`);
-  const lines = await readLinesForMs(t, 1200);
+  const lines = await readLinesForMs(t, 1200, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
   for (const line of lines) {
     const p = parseBetaflightGetValue(line);
     if (p && p.key === key) return p.value;
@@ -104,7 +88,7 @@ export async function runBetaflightPassthrough(
 ): Promise<PassthroughBootloaderResult> {
   const log = opt.logger;
   await writeLine(t, '#');
-  const head = await readLinesForMs(t, 600);
+  const head = await readLinesForMs(t, 600, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
   const blob = head.join('');
   if (blob.includes('CCC')) {
     log.info('Уже в passthrough / загрузчик (метка CCC)');
@@ -124,7 +108,7 @@ export async function runBetaflightPassthrough(
   let uart = opt.manualUartIndex;
   if (uart === undefined) {
     await writeLine(t, 'serial');
-    const serialLines = await readLinesForMs(t, 1200);
+    const serialLines = await readLinesForMs(t, 1200, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     uart = findBetaflightRxUartIndexFromSerialLines(serialLines.map((l) => l.trim())) ?? undefined;
   }
   if (uart === undefined) throw new RxUartNotFoundError('Не найден UART с функцией RX (маска 64).');
@@ -132,7 +116,7 @@ export async function runBetaflightPassthrough(
   log.info(`serialpassthrough ${uart} ${opt.baud}`);
   await writeLine(t, `serialpassthrough ${uart} ${opt.baud}`);
   await new Promise((r) => setTimeout(r, 250));
-  await readLinesForMs(t, 500);
+  await readLinesForMs(t, 500, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
 
   await enterElrsBootloader(
     (u) => t.write(u),

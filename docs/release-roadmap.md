@@ -12,6 +12,7 @@
 | **Этап 2** | **Сделано:** Native bridge (док + UI + `getSerialPortForEsptool`), честный WebUSB в UI, Worker SHA-256 для больших файлов. |
 | **Этап 3** | **Сделано:** CI `web-flasher.yml`, `CHANGELOG.md`, [manual-test-checklist.md](./manual-test-checklist.md), интеграционные тесты BF/EdgeTX со сценарным моком, **EdgeTX passthrough** в ядре и UI; **исправлен** разбор строк `get … = …` с `\r\n` в `parseBetaflightGetValue`. |
 | **Этап 4** (pre-1.0) | **Сделано:** версия **0.1.0** в `web-flasher/package.json`, [web-flasher-deployment.md](./web-flasher-deployment.md), [ota-endpoints.md](./ota-endpoints.md), интеграционный тест **INAV** (`InavScriptedMock`). |
+| **Этап 5** | **Сделано:** ускорение passthrough CLI (`readLinesForMs` + `idleFlushMs`), тест `cliReadLines.test.ts`, ускорение мок-тестов EdgeTX (`skipHardwareDelays`); версия **0.1.1**. |
 
 ---
 
@@ -75,6 +76,18 @@
 | Деплой | [web-flasher-deployment.md](./web-flasher-deployment.md): сборка `dist/`, HTTPS / secure context, статический хостинг, замечания по PWA. |
 | OTA | [ota-endpoints.md](./ota-endpoints.md): типичные хосты/пути и отладка; ссылка из матрицы транспортов при необходимости. |
 | Тесты passthrough | Интеграция **INAV** со сценарным моком (аналог Betaflight/EdgeTX). |
+
+---
+
+## Этап 5 — скорость passthrough и CI
+
+**Цель:** не держать искусственно полные таймауты `readLinesForMs` после того, как ответ CLI уже получен; сократить время прогона Vitest без изменения поведения на медленном UART (частичные строки и пустой буфер не дают раннего выхода).
+
+| Веха | Критерий готовности |
+|------|---------------------|
+| CLI read | `cliReadLines.ts`: `readLinesForMs(..., { idleFlushMs })` подключён к Betaflight/INAV. |
+| Тесты EdgeTX | Паузы «как на железе» остаются по умолчанию; в тестах — `skipHardwareDelays: true`. |
+| Версия | Запись в [CHANGELOG](../web-flasher/CHANGELOG.md) (например **0.1.1**). |
 
 ---
 

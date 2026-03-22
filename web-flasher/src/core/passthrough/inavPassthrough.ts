@@ -4,28 +4,12 @@ import type { IFirmwareTransport } from '../transports/types';
 import { enterElrsBootloader, readBootloaderTargetLine } from './elrsBootloader';
 import type { PassthroughBootloaderResult } from './betaflightPassthrough';
 import { findBetaflightRxUartIndexFromSerialLines, parseInavVersionBanner } from './cliParsers';
+import { DEFAULT_CLI_LINE_IDLE_FLUSH_MS, readLinesForMs } from './cliReadLines';
 
 const enc = new TextEncoder();
 
 async function writeLine(t: IFirmwareTransport, s: string): Promise<void> {
   await t.write(enc.encode(s.endsWith('\n') ? s : s + '\r\n'));
-}
-
-async function readLinesForMs(t: IFirmwareTransport, totalMs: number): Promise<string[]> {
-  const out: string[] = [];
-  const deadline = Date.now() + totalMs;
-  let buf = '';
-  while (Date.now() < deadline) {
-    const chunk = await t.read(512, Math.min(200, deadline - Date.now()));
-    if (!chunk.length) continue;
-    for (let i = 0; i < chunk.length; i++) buf += String.fromCharCode(chunk[i]);
-    let idx: number;
-    while ((idx = buf.indexOf('\n')) >= 0) {
-      out.push(buf.slice(0, idx + 1));
-      buf = buf.slice(idx + 1);
-    }
-  }
-  return out;
 }
 
 export interface InavPassthroughOptions {
@@ -45,11 +29,11 @@ export async function runInavPassthrough(
 ): Promise<PassthroughBootloaderResult> {
   const log = opt.logger;
   await writeLine(t, '#');
-  let lines = await readLinesForMs(t, 600);
+  let lines = await readLinesForMs(t, 600, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
   let blob = lines.join('');
   if (!parseInavVersionBanner(blob)) {
     await writeLine(t, 'version');
-    lines = await readLinesForMs(t, 800);
+    lines = await readLinesForMs(t, 800, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     blob += lines.join('');
   }
   const ver = parseInavVersionBanner(blob);
@@ -64,7 +48,7 @@ export async function runInavPassthrough(
   let uart = opt.manualUartIndex;
   if (uart === undefined) {
     await writeLine(t, 'serial');
-    const serialLines = await readLinesForMs(t, 1200);
+    const serialLines = await readLinesForMs(t, 1200, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
     uart = findBetaflightRxUartIndexFromSerialLines(serialLines.map((l) => l.trim())) ?? undefined;
   }
   if (uart === undefined) throw new RxUartNotFoundError('INAV: не найден RX UART в выводе serial.');
@@ -73,7 +57,7 @@ export async function runInavPassthrough(
   log.info(`serialpassthrough ${uart} ${opt.baud} ${mode}`);
   await writeLine(t, `serialpassthrough ${uart} ${opt.baud} ${mode}`);
   await new Promise((r) => setTimeout(r, 300));
-  await readLinesForMs(t, 500);
+  await readLinesForMs(t, 500, { idleFlushMs: DEFAULT_CLI_LINE_IDLE_FLUSH_MS });
 
   await enterElrsBootloader(
     (u) => t.write(u),

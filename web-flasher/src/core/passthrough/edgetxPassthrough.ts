@@ -19,6 +19,7 @@ async function sendExpect(
   expectSubstr: string,
   delayMs: number,
   log: ScopedLogger,
+  skipHardwareDelays: boolean,
 ): Promise<void> {
   const line = cmd.replace(/\n/g, '').replace(/\r/g, '');
   await writeLine(t, line);
@@ -29,7 +30,7 @@ async function sendExpect(
     for (let i = 0; i < chunk.length; i++) buf += String.fromCharCode(chunk[i]);
     if (buf.includes(expectSubstr)) {
       log.debug(`EdgeTX: ok «${expectSubstr}»`);
-      await sleep(delayMs);
+      if (!skipHardwareDelays && delayMs > 0) await sleep(delayMs);
       return;
     }
   }
@@ -43,6 +44,11 @@ export interface EdgeTxPassthroughOptions {
   backpack: boolean;
   bindPhraseKey?: string | null;
   logger: ScopedLogger;
+  /**
+   * Только для юнит-тестов: не ждать паузы между шагами и короткий drain (на железе оставьте false).
+   * @internal
+   */
+  skipHardwareDelays?: boolean;
 }
 
 /**
@@ -53,27 +59,28 @@ export async function runEdgeTxPassthrough(
   opt: EdgeTxPassthroughOptions,
 ): Promise<PassthroughBootloaderResult> {
   const log = opt.logger;
+  const q = opt.skipHardwareDelays === true;
   if (opt.backpack) {
     log.info('EdgeTX backpack passthrough');
-    await sendExpect(t, 'set rfmod 0 power off', 'set:', 100, log);
-    await sendExpect(t, 'set pulses 0', 'set:', 500, log);
-    await sendExpect(t, 'set rfmod 0 power on', 'set:', 2500, log);
-    await sendExpect(t, 'set rfmod 0 bootpin 1', 'set:', 100, log);
-    await sendExpect(t, 'set rfmod 0 bootpin 0', 'set:', 100, log);
+    await sendExpect(t, 'set rfmod 0 power off', 'set:', 100, log, q);
+    await sendExpect(t, 'set pulses 0', 'set:', 500, log, q);
+    await sendExpect(t, 'set rfmod 0 power on', 'set:', 2500, log, q);
+    await sendExpect(t, 'set rfmod 0 bootpin 1', 'set:', 100, log, q);
+    await sendExpect(t, 'set rfmod 0 bootpin 0', 'set:', 100, log, q);
     log.info(`serialpassthrough rfmod 0 ${opt.baud}`);
     await writeLine(t, `serialpassthrough rfmod 0 ${opt.baud}`);
   } else {
     log.info('EdgeTX passthrough');
-    await sendExpect(t, 'set pulses 0', 'set:', 500, log);
-    await sendExpect(t, 'set rfmod 0 power off', 'set:', 500, log);
-    await sendExpect(t, 'set rfmod 0 bootpin 1', 'set:', 100, log);
-    await sendExpect(t, 'set rfmod 0 power on', 'set:', 100, log);
-    await sendExpect(t, 'set rfmod 0 bootpin 0', 'set:', 0, log);
+    await sendExpect(t, 'set pulses 0', 'set:', 500, log, q);
+    await sendExpect(t, 'set rfmod 0 power off', 'set:', 500, log, q);
+    await sendExpect(t, 'set rfmod 0 bootpin 1', 'set:', 100, log, q);
+    await sendExpect(t, 'set rfmod 0 power on', 'set:', 100, log, q);
+    await sendExpect(t, 'set rfmod 0 bootpin 0', 'set:', 0, log, q);
     log.info(`serialpassthrough rfmod 0 ${opt.baud}`);
     await writeLine(t, `serialpassthrough rfmod 0 ${opt.baud}`);
   }
-  await sleep(200);
-  await readEdgeTxDrain(t, 400);
+  if (!q) await sleep(200);
+  await readEdgeTxDrain(t, q ? 50 : 400);
 
   await enterElrsBootloader(
     (u) => t.write(u),

@@ -22,6 +22,7 @@
 ## Passthrough
 
 - Парсинг вывода CLI вынесен в чистые функции в `cliParsers.ts` (например `findBetaflightRxUartIndexFromSerialLines`, баннеры INAV/BF). Строки `key = value` из BF CLI часто приходят с **CRLF**; `parseBetaflightGetValue` нормализует `\r` перед разбором.
+- Накопление строк CLI: **`cliReadLines.ts`** (`readLinesForMs` + `idleFlushMs`) для Betaflight/INAV — меньше лишнего ожидания после полного ответа.
 - Команда `serialpassthrough` формируется после определения UART и режима (CRSF vs GHST half‑duplex) для Betaflight/INAV.
 - **EdgeTX:** `edgetxPassthrough.ts` — последовательность `set` / `serialpassthrough rfmod 0` (вариант backpack в Expert).
 
