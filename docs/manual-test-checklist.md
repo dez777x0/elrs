@@ -26,6 +26,7 @@
 |-----|-----------|
 | Подключить USB-UART, **Подключить устройство** — порт открывается | |
 | **Direct UART** + прошивка на известный ESP — успех или ожидаемая ошибка чипа | |
+| В логе direct: три стратегии сброса (classic, RTS 200 ms, RTS 500 ms) | |
 | **Betaflight passthrough** — вход в CLI, serialpassthrough, прошивка | |
 | **INAV passthrough** — аналогично | |
 | **EdgeTX** / **EdgeTX backpack** (Expert) — последовательность set / serialpassthrough | |

@@ -14,6 +14,10 @@
 - **`NativeBridgeTransport`**: контракт `connect/read/write/...`, реализация через переданные async‑колбэки (интеграция WebView/Capacitor).
 - **`MockTransport`**: очереди байт для тестов и сценариев с фикстурами.
 
+## Сброс UART (direct)
+
+- `directUartReset.ts`: несколько стратегий подряд — классический DTR/RTS, короткий и **длинный** импульс RTS (на капризных линиях EN).
+
 ## Прошивка ESP
 
 - Используется **`esptool-js`**: `Transport` из пакета + `ESPLoader.connect` / `detectChip` / `writeFlash`.

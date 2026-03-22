@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-03-22
+
+### Добавлено
+
+- Direct UART: третья стратегия сброса — **длинный импульс RTS** (500 ms) после classic и короткого RTS; тесты `directUartReset.test.ts`.
+- Документация OTA: ориентиры по веткам **ExpressLRS v2 / v3** в `docs/ota-endpoints.md`.
+
 ## [0.1.1] — 2026-03-22
 
 ### Изменено

@@ -15,8 +15,8 @@
 | **Workers** | **Частично** | SHA-256 ≥ 2 MiB в worker; разбор ZIP в main thread (JSZip). |
 | **EdgeTX passthrough** | **Сделано** | `runEdgeTxPassthrough` (обычный + backpack в Expert), режим UI «EdgeTX passthrough». |
 | **Betaflight SPI RX (ExpressLRS SPI)** | **Сделано** | При ошибках UART проверяется `rx_spi_protocol`; при EXPRESSLRS добавляется сообщение и ссылка на wiki SPI RX. |
-| **Несколько стратегий сброса с fallback** | **Частично** | Для direct UART: `DTR/RTS classic`, затем `RTS pulse` с паузой; обе логируются. Полного перебора режимов esptool нет. |
-| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Ориентиры по URL: [ota-endpoints.md](./ota-endpoints.md). Автоопределения по устройству нет. |
+| **Несколько стратегий сброса с fallback** | **Сделано (direct)** | Три шага подряд: `DTR/RTS classic` → короткий `RTS pulse` (200 ms) → длинный `RTS pulse` (500 ms), с паузами и логами. Перебор режимов **esptool** (`default_reset` / …) по очереди в коде не реализован — задаётся в Expert. |
+| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Ориентиры по URL и веткам v2/v3: [ota-endpoints.md](./ota-endpoints.md). Автоопределения по устройству нет. |
 
 ## Passthrough / CLI
 
