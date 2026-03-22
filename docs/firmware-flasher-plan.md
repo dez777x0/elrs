@@ -10,7 +10,7 @@
 1. **Vue 3 + Vite + TypeScript + PWA** в `web-flasher/`.
 2. **UI-agnostic ядро** (`web-flasher/src/core/*`): транспорты, детекция ESP, passthrough Betaflight/INAV, вход в загрузчик, парсинг прошивки, движок прошивки на **esptool-js**.
 3. **Честная матрица платформ**: Windows Chromium — Web Serial; iOS Safari — без проводного USB, OTA; Android — Serial при наличии API; Native Bridge — интерфейс для оболочки.
-4. **Локальный файл** как главный вход: `.bin`, несколько сегментов, `.zip` + manifest.
+4. **Локальный файл** как главный вход: `.bin`, несколько сегментов, `.zip` + manifest; опционально **мультивыбор** `.bin`+sidecar `.json` за один раз.
 5. **Типизированные ошибки**, лог-панель, Expert Mode, локальное хранилище недавних файлов/настроек.
 6. **Тесты** (Vitest): парсинг, эвристики, mismatch, passthrough по транскриптам, мок-интеграции.
 

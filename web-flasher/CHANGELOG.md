@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-03-22
+
+### Добавлено
+
+- Мультивыбор прошивки **и** sidecar `.json` в одном диалоге / drag-drop (`partitionFirmwarePick`, тесты); подсказки в UI и в `docs/firmware-manifest-format.md`.
+
 ## [0.1.2] — 2026-03-22
 
 ### Добавлено

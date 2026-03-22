@@ -9,7 +9,7 @@
 | **Таргет RX после bootloader** | **Сделано для BF/INAV** | После `enterElrsBootloader` вызывается `readBootloaderTargetLine`; строка передаётся в `assertFirmwareMatchesDevice` из `useFlasherSession`. Для **direct UART** и **OTA** по-прежнему нет строки от RX (ожидаемо). Пустой ответ RX не блокирует прошивку. |
 | **Фазы verify / reboot в UI** | **Частично** | `verify` ставится после успешного `writeFlash`; `reboot` — перед `loader.after`; `done` — после `disconnect`. Детализации шагов внутри esptool-js в UI нет. |
 | **Erase flash / полная очистка** | **Expert** | Чекбокс «Полное стирание flash (erase all)» в Expert Mode, прокидывается в esptool-js. |
-| **Сторонний JSON (sidecar) к .bin** | **Сделано (Expert)** | Отдельный выбор `.json` в Expert; при наличии manifest в ZIP sidecar игнорируется. Авто-поиск `*.json` без второго выбора файла в браузере не делался. |
+| **Сторонний JSON (sidecar) к .bin** | **Сделано** | Expert: отдельный выбор `.json`; основной диалог: **мультивыбор** `.bin`+`.json` (или `.zip`+`.json`). При manifest в ZIP sidecar не применяется. Сканирование папки без диалога в браузере нет. |
 | **WebUSB в основном потоке прошивки** | **Намеренно не основной путь** | Класс `WebUSBTransport` остаётся; в UI — честные бейджи и кнопка проверки в Expert. **esptool-js** по-прежнему только через **Web Serial** (или `getSerialPortForEsptool` из native bridge). |
 | **NativeBridgeTransport** | **Сделано** | [native-bridge.md](./native-bridge.md), глобал, Expert UART backend, `getSerialPortForEsptool`. Демо WebView в репозитории не обязателен. |
 | **Workers** | **Частично** | SHA-256 ≥ 2 MiB в worker; разбор ZIP в main thread (JSZip). |

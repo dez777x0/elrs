@@ -18,6 +18,10 @@
 
 - `directUartReset.ts`: несколько стратегий подряд — классический DTR/RTS, короткий и **длинный** импульс RTS (на капризных линиях EN).
 
+## Прошивка и файлы
+
+- **`partitionFirmwarePick`**: из списка файлов (multiple / drop) выделяет один `.bin`/`.zip` и опционально один `.json` sidecar.
+
 ## Прошивка ESP
 
 - Используется **`esptool-js`**: `Transport` из пакета + `ESPLoader.connect` / `detectChip` / `writeFlash`.

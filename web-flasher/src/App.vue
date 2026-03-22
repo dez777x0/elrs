@@ -36,13 +36,14 @@ const {
   toggleExpert,
   probeWebUsb,
   setUartBackend,
+  applyPickedFiles,
 } = useFlasherSession();
 
 function onPickFile(e: Event): void {
   const t = e.target as HTMLInputElement;
-  const f = t.files?.[0];
-  if (f) selectedFile.value = f;
+  const list = t.files ? Array.from(t.files) : [];
   t.value = '';
+  if (list.length) applyPickedFiles(list);
 }
 
 function onPickSidecar(e: Event): void {
@@ -59,8 +60,8 @@ function clearSidecar(): void {
 
 function onDrop(e: DragEvent): void {
   dropActive.value = false;
-  const f = e.dataTransfer?.files?.[0];
-  if (f) selectedFile.value = f;
+  const dt = e.dataTransfer?.files;
+  if (dt?.length) applyPickedFiles(Array.from(dt));
 }
 
 function segOffsets(segments: FirmwareSegment[]): string {
@@ -116,8 +117,15 @@ async function onProbeWebUsb(): Promise<void> {
         @click="fileInput?.click()"
       >
         <p class="cta-primary">Выбрать файл прошивки</p>
-        <p class="hint">Перетащите .bin или .zip сюда, или нажмите</p>
-        <input ref="fileInput" type="file" accept=".bin,.zip" class="hidden" @change="onPickFile" />
+        <p class="hint">Перетащите .bin или .zip сюда, или нажмите. Можно выбрать несколько файлов: прошивка + sidecar .json (Ctrl/⌘).</p>
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".bin,.zip,.json,application/json"
+          multiple
+          class="hidden"
+          @change="onPickFile"
+        />
       </section>
 
       <div class="row">
@@ -239,7 +247,7 @@ async function onProbeWebUsb(): Promise<void> {
           <label class="danger"
             >Полное стирание flash (erase all) <input v-model="prefs.expert.eraseAll" type="checkbox" @change="persistPrefs"
           /></label>
-          <p class="expert-hint">Sidecar JSON (опционально, только без manifest в ZIP):</p>
+          <p class="expert-hint">Sidecar JSON (опционально, только без manifest в ZIP). Либо мультивыбор .bin + .json в основном поле выше.</p>
           <button type="button" class="btn secondary small" @click="sidecarInput?.click()">Выбрать .json</button>
           <span v-if="sidecarFile" class="sidecar-name">{{ sidecarFile.name }}</span>
           <button v-if="sidecarFile" type="button" class="btn small" @click="clearSidecar">Сбросить sidecar</button>

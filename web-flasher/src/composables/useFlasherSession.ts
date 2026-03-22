@@ -1,5 +1,6 @@
 import { computed, ref, shallowRef, watch } from 'vue';
 import { FlashLogger } from '@/core/logging/FlashLogger';
+import { partitionFirmwarePick } from '@/core/firmware/partitionFirmwarePick';
 import { parseFirmwareFile, type ParsedFirmwarePackage } from '@/core/firmware/parseFirmwareInput';
 import { WebSerialTransport } from '@/core/transports/WebSerialTransport';
 import { NativeBridgeTransport } from '@/core/transports/NativeBridgeTransport';
@@ -391,6 +392,24 @@ export function useFlasherSession() {
     savePrefs(prefs.value);
   }
 
+  /** Один или несколько файлов из диалога / drag-drop: .bin|.zip [+ .json]. */
+  function applyPickedFiles(files: File[]): void {
+    if (!files.length) return;
+    lastError.value = null;
+    try {
+      const { firmware, sidecar } = partitionFirmwarePick(files);
+      selectedFile.value = firmware;
+      sidecarFile.value = sidecar;
+      if (sidecar) {
+        logger.log('info', 'FlasherSession', `Sidecar из мультивыбора: ${sidecar.name}`);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      lastError.value = msg;
+      logger.log('error', 'FlasherSession', msg);
+    }
+  }
+
   function toggleExpert(): void {
     expertOpen.value = !expertOpen.value;
   }
@@ -433,5 +452,6 @@ export function useFlasherSession() {
     applyOtaPathPreset,
     persistPrefs,
     toggleExpert,
+    applyPickedFiles,
   };
 }

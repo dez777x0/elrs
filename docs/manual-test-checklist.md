@@ -18,6 +18,7 @@
 | Выбор одного `.bin` — сводка, SHA-256, MD5 | |
 | Выбор `.zip` с `firmware-manifest.json` — сегменты и адреса | |
 | Sidecar JSON (Expert) без manifest в ZIP — chip/target/offset применяются | |
+| Мультивыбор в основном поле: `.bin` + `.json` за один раз — тот же эффект, что sidecar в Expert | |
 | Sidecar с ZIP manifest — sidecar игнорируется (лог предупреждение) | |
 
 ## 2. Web Serial (Windows / Linux Chromium)
