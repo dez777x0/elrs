@@ -149,6 +149,7 @@ npm run build
 - [docs/hardware-limitations.md](./docs/hardware-limitations.md) — ограничения и честные ожидания
 - [docs/implementation-notes.md](./docs/implementation-notes.md) — заметки по архитектуре
 - [docs/honest-gap.md](./docs/honest-gap.md) — честный gap: что ещё не доведено до спецификации
+- [docs/release-roadmap.md](./docs/release-roadmap.md) — roadmap до релиза (вехи без дат)
 - [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff

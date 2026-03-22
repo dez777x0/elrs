@@ -29,3 +29,5 @@
 См. [../docs/hardware-limitations.md](../docs/hardware-limitations.md). На iOS Safari проводной UART через обычный браузер недоступен — используйте OTA или нативную оболочку с `NativeBridgeTransport`.
 
 **Что ещё не совпадает с целевой спецификацией:** [../docs/honest-gap.md](../docs/honest-gap.md).
+
+**Roadmap до релиза:** [../docs/release-roadmap.md](../docs/release-roadmap.md).

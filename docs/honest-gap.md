@@ -47,3 +47,5 @@
 - В `implementation-notes.md` ранее могли упоминаться имена функций, которых нет в коде — сверяйте с `src/core/passthrough/cliParsers.ts`.
 
 Если закрываете пункт из этой таблицы — измените статус здесь в том же PR.
+
+План доведения до релиза: [release-roadmap.md](./release-roadmap.md).
