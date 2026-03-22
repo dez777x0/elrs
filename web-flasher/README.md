@@ -34,4 +34,6 @@
 
 **Native bridge (оболочка / iOS):** [../docs/native-bridge.md](../docs/native-bridge.md).
 
-**История изменений:** [CHANGELOG.md](./CHANGELOG.md). Ручной регресс: [../docs/manual-test-checklist.md](../docs/manual-test-checklist.md).
+**История изменений:** [CHANGELOG.md](./CHANGELOG.md) (текущая версия в `package.json`). Ручной регресс: [../docs/manual-test-checklist.md](../docs/manual-test-checklist.md).
+
+**Деплой:** [../docs/web-flasher-deployment.md](../docs/web-flasher-deployment.md). **OTA URL:** [../docs/ota-endpoints.md](../docs/ota-endpoints.md).

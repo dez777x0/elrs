@@ -16,7 +16,7 @@
 | **EdgeTX passthrough** | **Сделано** | `runEdgeTxPassthrough` (обычный + backpack в Expert), режим UI «EdgeTX passthrough». |
 | **Betaflight SPI RX (ExpressLRS SPI)** | **Сделано** | При ошибках UART проверяется `rx_spi_protocol`; при EXPRESSLRS добавляется сообщение и ссылка на wiki SPI RX. |
 | **Несколько стратегий сброса с fallback** | **Частично** | Для direct UART: `DTR/RTS classic`, затем `RTS pulse` с паузой; обе логируются. Полного перебора режимов esptool нет. |
-| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Автоопределения по устройству нет. |
+| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Ориентиры по URL: [ota-endpoints.md](./ota-endpoints.md). Автоопределения по устройству нет. |
 
 ## Passthrough / CLI
 
@@ -33,6 +33,7 @@
 | End-to-end на железе | Нет в CI (ожидаемо). |
 | Интеграция Betaflight passthrough до bootloader | **Сценарный мок** `BetaflightScriptedMock` + `passthroughBf.integration.test.ts`; парсер `get` учитывает `\r\n` (реальный вывод BF CLI). |
 | Интеграция EdgeTX (мок) | `EdgeTxScriptedMock` + `edgetx.integration.test.ts`. |
+| Интеграция INAV (мок) | `InavScriptedMock` + `passthroughInav.integration.test.ts`. |
 | WebUSB / Web Serial | Нет автоматизированных тестов (нужен браузер/драйверы). |
 
 ## Платформы

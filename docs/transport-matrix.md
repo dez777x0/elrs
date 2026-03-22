@@ -9,3 +9,5 @@
 | iOS Safari | **Нет** (нет Web Serial/USB для произвольного UART) | **Нет** | **Да** (локальный файл → Wi‑Fi точка доступа RX) | Для будущего UART через оболочку |
 
 Приложение **не заявляет** проводную USB‑прошивку на iOS в обычном браузере. Бейдж в UI отражает фактические `navigator.serial` / `navigator.usb` и пользовательский выбор режима (OTA / passthrough / direct).
+
+Типичные URL для OTA и замечания по сети: **[ota-endpoints.md](./ota-endpoints.md)**. Развёртывание статического приложения: **[web-flasher-deployment.md](./web-flasher-deployment.md)**.

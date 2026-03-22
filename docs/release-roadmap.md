@@ -11,6 +11,7 @@
 | **Этап 1 P1/P2** | **Частично:** erase all, sidecar JSON, пресеты пути OTA, BF SPI RX, двойной UART reset. |
 | **Этап 2** | **Сделано:** Native bridge (док + UI + `getSerialPortForEsptool`), честный WebUSB в UI, Worker SHA-256 для больших файлов. |
 | **Этап 3** | **Сделано:** CI `web-flasher.yml`, `CHANGELOG.md`, [manual-test-checklist.md](./manual-test-checklist.md), интеграционные тесты BF/EdgeTX со сценарным моком, **EdgeTX passthrough** в ядре и UI; **исправлен** разбор строк `get … = …` с `\r\n` в `parseBetaflightGetValue`. |
+| **Этап 4** (pre-1.0) | **Сделано:** версия **0.1.0** в `web-flasher/package.json`, [web-flasher-deployment.md](./web-flasher-deployment.md), [ota-endpoints.md](./ota-endpoints.md), интеграционный тест **INAV** (`InavScriptedMock`). |
 
 ---
 
@@ -61,6 +62,19 @@
 | P2 | Чек-лист **ручного теста на железе** (1–2 платы ESP + BF/INAV) в `docs/` |
 | P2 | Минимальный **CHANGELOG** для web-flasher |
 | P3 | **EdgeTX** passthrough (если остаётся в продуктовом scope) |
+
+---
+
+## Этап 4 — подготовка к объявлению **1.0.0** (pre-release)
+
+**Цель:** закрыть явные пункты критерия релиза из шапки документа: осмысленная версия артефакта, описание деплоя для пользователей/админов, документированная матрица OTA, паритет интеграционных тестов по passthrough (INAV).
+
+| Веха | Критерий готовности |
+|------|---------------------|
+| Версия | `web-flasher/package.json` ≠ `0.0.0` (например **0.1.0**); запись в [CHANGELOG](../web-flasher/CHANGELOG.md). |
+| Деплой | [web-flasher-deployment.md](./web-flasher-deployment.md): сборка `dist/`, HTTPS / secure context, статический хостинг, замечания по PWA. |
+| OTA | [ota-endpoints.md](./ota-endpoints.md): типичные хосты/пути и отладка; ссылка из матрицы транспортов при необходимости. |
+| Тесты passthrough | Интеграция **INAV** со сценарным моком (аналог Betaflight/EdgeTX). |
 
 ---
 

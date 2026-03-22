@@ -43,4 +43,4 @@
 
 Актуальный **gap** относительно полной спецификации: [honest-gap.md](./honest-gap.md).
 
-**Roadmap до релиза:** [release-roadmap.md](./release-roadmap.md).
+**Roadmap до релиза:** [release-roadmap.md](./release-roadmap.md). Развёртывание и типичные URL OTA: [web-flasher-deployment.md](./web-flasher-deployment.md), [ota-endpoints.md](./ota-endpoints.md).

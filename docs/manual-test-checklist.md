@@ -8,6 +8,7 @@
 |-----|-----------|
 | ОС + браузер (версия) записаны | |
 | URL: `https://…` или `http://localhost:5173` (Serial только secure context) | |
+| При проверке с другого хоста — см. [web-flasher-deployment.md](./web-flasher-deployment.md) (HTTPS) | |
 | `cd web-flasher && npm run dev` или production `npm run build` + `preview` | |
 
 ## 1. Парсинг прошивки

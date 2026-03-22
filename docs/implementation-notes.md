@@ -25,7 +25,7 @@
 - Команда `serialpassthrough` формируется после определения UART и режима (CRSF vs GHST half‑duplex) для Betaflight/INAV.
 - **EdgeTX:** `edgetxPassthrough.ts` — последовательность `set` / `serialpassthrough rfmod 0` (вариант backpack в Expert).
 
-Полный список известных пробелов: **[honest-gap.md](./honest-gap.md)**. Roadmap до релиза: **[release-roadmap.md](./release-roadmap.md)**.
+Полный список известных пробелов: **[honest-gap.md](./honest-gap.md)**. Roadmap до релиза: **[release-roadmap.md](./release-roadmap.md)**. Деплой и OTA: **[web-flasher-deployment.md](./web-flasher-deployment.md)**, **[ota-endpoints.md](./ota-endpoints.md)**.
 
 ## Сборка и тесты
 

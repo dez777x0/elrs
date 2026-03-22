@@ -152,6 +152,8 @@ npm run build
 - [docs/release-roadmap.md](./docs/release-roadmap.md) — roadmap до релиза (вехи без дат)
 - [docs/native-bridge.md](./docs/native-bridge.md) — нативная оболочка / iOS UART
 - [docs/manual-test-checklist.md](./docs/manual-test-checklist.md) — ручной регресс на железе
+- [docs/web-flasher-deployment.md](./docs/web-flasher-deployment.md) — сборка `dist/`, HTTPS, статический хостинг
+- [docs/ota-endpoints.md](./docs/ota-endpoints.md) — типичные хосты и пути OTA
 - [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff
