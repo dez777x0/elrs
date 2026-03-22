@@ -7,7 +7,8 @@
 | Этап | Статус |
 |------|--------|
 | **Этап 0** (честный MVP) | В основном выполнен: сборка, тесты, доки, PWA; CI в репозитории — по усмотрению команды. |
-| **Этап 1 P0** | **В работе:** строка таргета RX + `assertFirmwareMatchesDevice` для **Betaflight / INAV**; фазы **verify / reboot / прогресс** привязаны к `writeFlash` и `after()`. Остаётся добить P1/P2 из таблицы ниже. |
+| **Этап 1 P0** | **Сделано:** таргет RX (BF/INAV), фазы verify/reboot, прогресс. |
+| **Этап 1 P1/P2** | **Частично:** erase all, sidecar JSON, пресеты пути OTA, BF SPI RX, двойной UART reset. Дальше — CI, ручной чек-лист железа, EdgeTX (если нужен). |
 
 ---
 
@@ -22,7 +23,7 @@
 | Версионирование | В `web-flasher/package.json` осмысленная версия (например `0.1.0`); при необходимости тег в git. |
 | PWA / деплой | Описан способ хостинга (статический хостинг, HTTPS для Serial). |
 
-**Не блокирует MVP:** EdgeTX, WebUSB в UI, Native bridge, workers, sidecar JSON.
+**Не блокирует MVP:** EdgeTX, WebUSB в UI, Native bridge, workers.
 
 ---
 
@@ -30,13 +31,13 @@
 
 | Приоритет | Работа | Зачем |
 |-----------|--------|--------|
-| P0 | Прочитать строку таргета RX после ELRS bootloader init и передать в `assertFirmwareMatchesDevice` (`detectedTarget`) | **В работе / сделано для BF+INAV** (`readBootloaderTargetLine`, `useFlasherSession`). Direct/OTA без строки RX — по-прежнему ок. |
-| P0 | Развести фазы **verify** / **reboot** в UI по реальным событиям esptool-js (колбэки прогресса / завершения writeFlash / after reset) | **Сделано:** хуки `FlashWriteHooks` в `writeSegmentsWithLoader` + прогресс по сегментам. |
-| P1 | Опция **erase all** (с предупреждением) в Expert Mode, прокинуть в `writeFlash` | Соответствие ожиданиям «полной перезаписи». |
-| P1 | **Sidecar JSON** к выбранному `.bin` (второй выбор файла или авто-поиск `*.bin.json`) с приоритетом из ТЗ | Метаданные без ZIP. |
-| P1 | **OTA:** пресеты путей или документированная матрица «версия ELRS → URL» + поле в UI | Меньше неудачных OTA на мобильных. |
-| P2 | Несколько **стратегий сброса** DTR/RTS с логированием попыток и fallback | Прямой UART на капризном железе. |
-| P2 | Ветка **Betaflight SPI RX** (`rx_spi_protocol`) с понятным сообщением | Паритет с web-flasher. |
+| P0 | Прочитать строку таргета RX после ELRS bootloader init и передать в `assertFirmwareMatchesDevice` (`detectedTarget`) | **Сделано** для BF+INAV. Direct/OTA без строки RX — ок. |
+| P0 | Развести фазы **verify** / **reboot** в UI по реальным событиям esptool-js (колбэки прогресса / завершения writeFlash / after reset) | **Сделано:** `FlashWriteHooks` + прогресс по сегментам. |
+| P1 | Опция **erase all** (с предупреждением) в Expert Mode, прокинуть в `writeFlash` | **Сделано** + предупреждение в сводке. |
+| P1 | **Sidecar JSON** к выбранному `.bin` (второй выбор файла или авто-поиск `*.bin.json`) с приоритетом из ТЗ | **Сделано** второй выбор в Expert; авто-поиск без file picker — нет. |
+| P1 | **OTA:** пресеты путей или документированная матрица «версия ELRS → URL» + поле в UI | **Частично:** поле пути + пресеты кнопками; матрица версий не автоматизирована. |
+| P2 | Несколько **стратегий сброса** DTR/RTS с логированием попыток и fallback | **Частично:** classic + RTS pulse подряд. |
+| P2 | Ветка **Betaflight SPI RX** (`rx_spi_protocol`) с понятным сообщением | **Сделано.** |
 
 ---
 

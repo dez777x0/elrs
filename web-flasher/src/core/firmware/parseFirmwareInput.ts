@@ -4,6 +4,8 @@ import { FlashLogger } from '../logging/FlashLogger';
 import { hintsFromFilename } from './filenameHeuristics';
 import { md5Bytes, sha256Bytes } from './hashes';
 import { parseManifestJson, type FirmwareManifest } from './manifest';
+import { coerceFlashOffset, parseSidecarJson, type SidecarMetadata } from './sidecar';
+import type { ScopedLogger } from '../logging/FlashLogger';
 
 export interface FirmwareSegment {
   name: string;
@@ -81,6 +83,32 @@ async function tryParseZip(file: File, log: FlashLogger): Promise<ParsedFirmware
   };
 }
 
+/**
+ * Sidecar имеет приоритет ниже manifest из ZIP (см. ТЗ). Для одиночного .bin усиливает эвристики имени.
+ */
+export function mergeSidecarIntoParsed(
+  pkg: ParsedFirmwarePackage,
+  side: SidecarMetadata,
+  log: ScopedLogger,
+): ParsedFirmwarePackage {
+  if (pkg.manifest) {
+    log.warn('Sidecar не применён: в пакете уже есть manifest из ZIP (приоритет выше).');
+    return pkg;
+  }
+  const segs = pkg.segments.map((s, i) => {
+    if (i !== 0 || side.offset === undefined) return s;
+    const off = coerceFlashOffset(side.offset);
+    return { ...s, offset: off };
+  });
+  return {
+    ...pkg,
+    segments: segs,
+    effectiveChip: side.chip ?? pkg.effectiveChip,
+    effectiveTarget: side.target ?? pkg.effectiveTarget,
+    effectiveVersion: side.firmwareVersion ?? pkg.effectiveVersion,
+  };
+}
+
 function concatSegments(segments: FirmwareSegment[]): Uint8Array {
   const total = segments.reduce((a, s) => a + s.data.length, 0);
   const out = new Uint8Array(total);
@@ -92,25 +120,40 @@ function concatSegments(segments: FirmwareSegment[]): Uint8Array {
   return out;
 }
 
-export async function parseFirmwareFile(file: File, logger: FlashLogger): Promise<ParsedFirmwarePackage> {
+export async function parseFirmwareFile(
+  file: File,
+  logger: FlashLogger,
+  sidecarFile?: File | null,
+): Promise<ParsedFirmwarePackage> {
   const log = logger.child('parseFirmware');
   const name = file.name.toLowerCase();
+  let pkg: ParsedFirmwarePackage;
   if (name.endsWith('.zip')) {
-    return tryParseZip(file, logger);
+    pkg = await tryParseZip(file, logger);
+  } else {
+    const data = new Uint8Array(await file.arrayBuffer());
+    const hints = hintsFromFilename(file.name);
+    const sha256 = await sha256Bytes(data);
+    const md5 = md5Bytes(data);
+    log.info(`Одиночный .bin: ${file.name} (${data.length} байт)`);
+    pkg = {
+      segments: [{ name: file.name, offset: 0, data }],
+      effectiveChip: hints.chip,
+      effectiveTarget: hints.target,
+      effectiveVersion: hints.version,
+      sha256,
+      md5,
+      filenameHints: hints,
+      sourceName: file.name,
+    };
   }
-  const data = new Uint8Array(await file.arrayBuffer());
-  const hints = hintsFromFilename(file.name);
-  const sha256 = await sha256Bytes(data);
-  const md5 = md5Bytes(data);
-  log.info(`Одиночный .bin: ${file.name} (${data.length} байт)`);
-  return {
-    segments: [{ name: file.name, offset: 0, data }],
-    effectiveChip: hints.chip,
-    effectiveTarget: hints.target,
-    effectiveVersion: hints.version,
-    sha256,
-    md5,
-    filenameHints: hints,
-    sourceName: file.name,
-  };
+
+  if (sidecarFile && sidecarFile.size > 0) {
+    const raw = await sidecarFile.text();
+    const side = parseSidecarJson(raw);
+    pkg = mergeSidecarIntoParsed(pkg, side, log);
+    log.info(`Sidecar применён: ${sidecarFile.name}`);
+  }
+
+  return pkg;
 }

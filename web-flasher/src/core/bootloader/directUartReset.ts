@@ -22,3 +22,10 @@ export async function tryRtsPulse(t: IFirmwareTransport, log: ScopedLogger): Pro
   await new Promise((r) => setTimeout(r, 200));
   await t.setRTS(false);
 }
+
+/** Несколько стратегий подряд с паузой (passthrough / капризный адаптер). */
+export async function runUartResetStrategies(t: IFirmwareTransport, log: ScopedLogger): Promise<void> {
+  await tryDtrRtsClassic(t, log);
+  await new Promise((r) => setTimeout(r, 120));
+  await tryRtsPulse(t, log);
+}

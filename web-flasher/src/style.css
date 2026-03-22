@@ -159,6 +159,36 @@ body {
   font: inherit;
 }
 
+.ota-path {
+  display: block;
+  margin-top: 0.65rem;
+}
+
+.ota-presets {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.preset-label {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+.expert-hint {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.sidecar-name {
+  font-size: 0.75rem;
+  margin-left: 0.35rem;
+  color: #58a6ff;
+}
+
 .summary ul {
   margin: 0;
   padding-left: 1.1rem;

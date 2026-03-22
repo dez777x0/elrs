@@ -1,4 +1,4 @@
-import { computed, ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { FlashLogger } from '@/core/logging/FlashLogger';
 import { parseFirmwareFile, type ParsedFirmwarePackage } from '@/core/firmware/parseFirmwareInput';
 import { WebSerialTransport } from '@/core/transports/WebSerialTransport';
@@ -8,7 +8,7 @@ import { runBetaflightPassthrough } from '@/core/passthrough/betaflightPassthrou
 import { runInavPassthrough } from '@/core/passthrough/inavPassthrough';
 import { assertFirmwareMatchesDevice } from '@/core/flash/compatibility';
 import { prepareEspLoader, writeSegmentsWithLoader } from '@/core/flash/espFlashEngine';
-import { tryDtrRtsClassic } from '@/core/bootloader/directUartReset';
+import { runUartResetStrategies } from '@/core/bootloader/directUartReset';
 import { FlasherError } from '@/core/errors';
 
 export type FlashPhase =
@@ -29,6 +29,8 @@ const LS_KEY = 'elrs-web-flasher-prefs-v1';
 
 interface Prefs {
   otaHost: string;
+  /** Путь относительно хоста OTA, напр. update */
+  otaUploadPath: string;
   expert: {
     forceFlash: boolean;
     halfDuplex: boolean;
@@ -36,23 +38,34 @@ interface Prefs {
     passthroughBaud: number;
     resetMode: 'default_reset' | 'no_reset';
     flashWriteSize: number;
+    /** Полное стирание flash перед записью (опасно) */
+    eraseAll: boolean;
   };
   recent: { name: string; size: number; lastModified: number; sha256?: string }[];
 }
 
 function loadPrefs(): Prefs {
+  const d = defaultPrefs();
   try {
     const r = localStorage.getItem(LS_KEY);
-    if (r) return { ...defaultPrefs(), ...JSON.parse(r) };
+    if (!r) return d;
+    const p = JSON.parse(r) as Partial<Prefs>;
+    return {
+      ...d,
+      ...p,
+      expert: { ...d.expert, ...p.expert },
+      recent: Array.isArray(p.recent) ? p.recent : d.recent,
+    };
   } catch {
     /* */
   }
-  return defaultPrefs();
+  return d;
 }
 
 function defaultPrefs(): Prefs {
   return {
     otaHost: 'http://10.0.0.1',
+    otaUploadPath: 'update',
     expert: {
       forceFlash: false,
       halfDuplex: false,
@@ -60,6 +73,7 @@ function defaultPrefs(): Prefs {
       passthroughBaud: 420000,
       resetMode: 'no_reset',
       flashWriteSize: 0,
+      eraseAll: false,
     },
     recent: [],
   };
@@ -87,6 +101,7 @@ export function useFlasherSession() {
   const expertOpen = ref(false);
   const prefs = ref<Prefs>(loadPrefs());
   const selectedFile = shallowRef<File | null>(null);
+  const sidecarFile = shallowRef<File | null>(null);
   const parsed = shallowRef<ParsedFirmwarePackage | null>(null);
   const lastError = ref<string | null>(null);
   const serialTransport = shallowRef<WebSerialTransport | null>(null);
@@ -104,7 +119,7 @@ export function useFlasherSession() {
 
   async function parseSelectedFile(): Promise<void> {
     if (!selectedFile.value) return;
-    parsed.value = await parseFirmwareFile(selectedFile.value, logger);
+    parsed.value = await parseFirmwareFile(selectedFile.value, logger, sidecarFile.value);
     const r = prefs.value.recent.filter((x) => x.name !== selectedFile.value!.name);
     r.unshift({
       name: selectedFile.value.name,
@@ -115,6 +130,13 @@ export function useFlasherSession() {
     prefs.value.recent = r.slice(0, 8);
     savePrefs(prefs.value);
   }
+
+  watch(
+    () => [selectedFile.value, sidecarFile.value] as const,
+    async ([f]) => {
+      if (f) await parseSelectedFile();
+    },
+  );
 
   async function connectSerial(): Promise<WebSerialTransport> {
     phase.value = 'connect';
@@ -141,7 +163,7 @@ export function useFlasherSession() {
         const ota = new OtaHttpTransport({
           logger,
           baseUrl: prefs.value.otaHost,
-          uploadPath: 'update',
+          uploadPath: prefs.value.otaUploadPath?.trim() || 'update',
         });
         await ota.connect();
         const total = parsed.value.segments.reduce((a, s) => a + s.data.length, 0);
@@ -191,7 +213,7 @@ export function useFlasherSession() {
         detectedTarget = r.rxTargetReported.trim() || undefined;
       } else {
         phase.value = 'bootloader';
-        await tryDtrRtsClassic(t, logger.child('reset'));
+        await runUartResetStrategies(t, logger.child('reset'));
       }
 
       phase.value = 'bootloader';
@@ -220,7 +242,7 @@ export function useFlasherSession() {
       progressFlash.value = 0;
       await writeSegmentsWithLoader(prepared, parsed.value.segments, {
         logger,
-        eraseAll: false,
+        eraseAll: prefs.value.expert.eraseAll,
         hooks: {
           onFlashProgress: (fileIndex, written, total) => {
             const part = total > 0 ? written / total : 0;
@@ -264,6 +286,17 @@ export function useFlasherSession() {
     savePrefs(prefs.value);
   }
 
+  function updateOtaUploadPath(p: string): void {
+    prefs.value.otaUploadPath = p;
+    savePrefs(prefs.value);
+  }
+
+  function applyOtaPathPreset(preset: string): void {
+    if (!preset) return;
+    prefs.value.otaUploadPath = preset;
+    savePrefs(prefs.value);
+  }
+
   function persistPrefs(): void {
     savePrefs(prefs.value);
   }
@@ -281,6 +314,7 @@ export function useFlasherSession() {
     expertOpen,
     prefs,
     selectedFile,
+    sidecarFile,
     parsed,
     lastError,
     serialTransport,
@@ -293,6 +327,8 @@ export function useFlasherSession() {
     copyLogs,
     downloadLogs,
     updateOtaHost,
+    updateOtaUploadPath,
+    applyOtaPathPreset,
     persistPrefs,
     toggleExpert,
   };

@@ -51,24 +51,34 @@ async function validateSerialRx(
   log: ScopedLogger,
 ): Promise<void> {
   const proto = halfDuplex ? ['GHST'] : ['CRSF', 'ELRS'];
+  const issues: string[] = [];
+
   const provider = await getCliValue(t, 'serialrx_provider', log);
   if (!provider || !proto.some((p) => provider.toUpperCase().includes(p))) {
-    throw new BetaflightConfigInvalidError(
-      `serialrx_provider должен быть ${proto.join('/')}, сейчас: ${provider ?? 'нет ответа'}`,
-    );
+    issues.push(`serialrx_provider должен быть ${proto.join('/')}, сейчас: ${provider ?? 'нет ответа'}`);
   }
   const inv = await getCliValue(t, 'serialrx_inverted', log);
   if (inv && inv.toUpperCase() !== 'OFF') {
-    throw new BetaflightConfigInvalidError('Установите serialrx_inverted = OFF');
+    issues.push('Установите serialrx_inverted = OFF');
   }
   const hd = await getCliValue(t, 'serialrx_halfduplex', log);
   if (halfDuplex) {
     if (hd && !['ON', 'AUTO'].includes(hd.toUpperCase())) {
-      throw new BetaflightConfigInvalidError('Для GHST обычно нужен half-duplex ON/AUTO');
+      issues.push('Для GHST обычно нужен half-duplex ON/AUTO');
     }
   } else if (hd && !['OFF', 'AUTO'].includes(hd.toUpperCase())) {
-    throw new BetaflightConfigInvalidError('Для CRSF установите serialrx_halfduplex = OFF');
+    issues.push('Для CRSF установите serialrx_halfduplex = OFF');
   }
+
+  if (issues.length === 0) return;
+
+  const spi = await getCliValue(t, 'rx_spi_protocol', log);
+  if (spi && spi.toUpperCase().includes('EXPRESSLRS')) {
+    issues.push('Обнаружен ExpressLRS SPI RX — UART passthrough для прошивки ESP здесь не подходит.');
+    issues.push('См. https://www.expresslrs.org/2.0/hardware/spi-receivers/');
+  }
+
+  throw new BetaflightConfigInvalidError(issues.join('\n'));
 }
 
 export interface BetaflightPassthroughOptions {

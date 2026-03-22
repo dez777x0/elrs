@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useFlasherSession } from '@/composables/useFlasherSession';
 import type { FirmwareSegment } from '@/core/firmware/parseFirmwareInput';
 
 const dropActive = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
+const sidecarInput = ref<HTMLInputElement | null>(null);
 const forceConfirm = ref(false);
 
 const {
@@ -15,30 +16,40 @@ const {
   expertOpen,
   prefs,
   selectedFile,
+  sidecarFile,
   parsed,
   lastError,
   progressFlash,
   transportBadge,
   wiredAvailable,
-  parseSelectedFile,
   connectSerial,
   runWorkflow,
   copyLogs,
   downloadLogs,
   updateOtaHost,
+  updateOtaUploadPath,
+  applyOtaPathPreset,
   persistPrefs,
   toggleExpert,
 } = useFlasherSession();
-
-watch(selectedFile, async (f) => {
-  if (f) await parseSelectedFile();
-});
 
 function onPickFile(e: Event): void {
   const t = e.target as HTMLInputElement;
   const f = t.files?.[0];
   if (f) selectedFile.value = f;
   t.value = '';
+}
+
+function onPickSidecar(e: Event): void {
+  const t = e.target as HTMLInputElement;
+  const f = t.files?.[0];
+  sidecarFile.value = f ?? null;
+  t.value = '';
+}
+
+function clearSidecar(): void {
+  sidecarFile.value = null;
+  persistPrefs();
 }
 
 function onDrop(e: DragEvent): void {
@@ -104,6 +115,20 @@ async function onFlashClick(): Promise<void> {
         </div>
         <div v-if="pathMode === 'ota'" class="ota">
           <label>OTA хост <input :value="prefs.otaHost" @input="updateOtaHost(($event.target as HTMLInputElement).value)" /></label>
+          <label class="ota-path"
+            >Путь загрузки
+            <input
+              :value="prefs.otaUploadPath"
+              placeholder="update"
+              @input="updateOtaUploadPath(($event.target as HTMLInputElement).value)"
+            />
+          </label>
+          <div class="ota-presets">
+            <span class="preset-label">Пресеты:</span>
+            <button type="button" class="btn small" @click="applyOtaPathPreset('update')">update</button>
+            <button type="button" class="btn small" @click="applyOtaPathPreset('upload')">upload</button>
+            <button type="button" class="btn small" @click="applyOtaPathPreset('api/update')">api/update</button>
+          </div>
         </div>
       </section>
 
@@ -117,6 +142,8 @@ async function onFlashClick(): Promise<void> {
           <li>Версия: {{ parsed.effectiveVersion ?? '—' }}</li>
           <li>SHA-256: <code>{{ parsed.sha256.slice(0, 24) }}…</code></li>
           <li>MD5: <code>{{ parsed.md5 }}</code></li>
+          <li v-if="sidecarFile">Sidecar: {{ sidecarFile.name }}</li>
+          <li v-if="prefs.expert.eraseAll" class="danger">Будет выполнено полное стирание flash (erase all)</li>
         </ul>
       </section>
 
@@ -171,6 +198,14 @@ async function onFlashClick(): Promise<void> {
             </select></label
           >
           <label>Flash block size (0 = по умолчанию) <input v-model.number="prefs.expert.flashWriteSize" type="number" @change="persistPrefs" /></label>
+          <label class="danger"
+            >Полное стирание flash (erase all) <input v-model="prefs.expert.eraseAll" type="checkbox" @change="persistPrefs"
+          /></label>
+          <p class="expert-hint">Sidecar JSON (опционально, только без manifest в ZIP):</p>
+          <button type="button" class="btn secondary small" @click="sidecarInput?.click()">Выбрать .json</button>
+          <span v-if="sidecarFile" class="sidecar-name">{{ sidecarFile.name }}</span>
+          <button v-if="sidecarFile" type="button" class="btn small" @click="clearSidecar">Сбросить sidecar</button>
+          <input ref="sidecarInput" type="file" accept=".json,application/json" class="hidden" @change="onPickSidecar" />
         </div>
       </section>
     </main>

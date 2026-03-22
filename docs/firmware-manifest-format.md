@@ -28,5 +28,16 @@
 
 1. JSON manifest внутри ZIP  
 2. Эвристики по имени файла (например `*_ESP32_*.bin`)  
-3. Опциональный sidecar: `имя.bin.json` рядом с файлом (не в ZIP) — через повторный выбор в Expert  
+3. Опциональный sidecar JSON в Expert Mode (отдельный выбор файла): поля `chip`, `target`, `firmwareVersion`, `offset` (hex/decimal). **Не применяется**, если в ZIP уже есть manifest (приоритет выше).  
 4. Ручное переопределение в Expert Mode с предупреждением  
+
+### Пример sidecar (`myrx.bin` + выбранный JSON)
+
+```json
+{
+  "chip": "ESP32-C3",
+  "target": "Unified_ESP32_2400_RX",
+  "firmwareVersion": "3.5.0",
+  "offset": "0x10000"
+}
+```

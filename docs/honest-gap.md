@@ -8,15 +8,15 @@
 |------|--------|-------------|
 | **Таргет RX после bootloader** | **Сделано для BF/INAV** | После `enterElrsBootloader` вызывается `readBootloaderTargetLine`; строка передаётся в `assertFirmwareMatchesDevice` из `useFlasherSession`. Для **direct UART** и **OTA** по-прежнему нет строки от RX (ожидаемо). Пустой ответ RX не блокирует прошивку. |
 | **Фазы verify / reboot в UI** | **Частично** | `verify` ставится после успешного `writeFlash`; `reboot` — перед `loader.after`; `done` — после `disconnect`. Детализации шагов внутри esptool-js в UI нет. |
-| **Erase flash / полная очистка** | Зафиксировано как `eraseAll: false` | В workflow нет переключателя «стереть чип»; только то, что делает esptool-js при текущих опциях. |
-| **Сторонний JSON (sidecar) к .bin** | Нет в UI | Приоритет метаданных из ТЗ (sidecar рядом с файлом) не реализован — только ZIP manifest и эвристики имени. |
+| **Erase flash / полная очистка** | **Expert** | Чекбокс «Полное стирание flash (erase all)» в Expert Mode, прокидывается в esptool-js. |
+| **Сторонний JSON (sidecar) к .bin** | **Сделано (Expert)** | Отдельный выбор `.json` в Expert; при наличии manifest в ZIP sidecar игнорируется. Авто-поиск `*.json` без второго выбора файла в браузере не делался. |
 | **WebUSB в основном потоке прошивки** | Не интегрирован в UI | Класс есть, но сценарий «выбрать WebUSB и прошить тем же мастером, что Serial» в приложении не проведён; esptool-js ожидает **Web Serial `SerialPort`**. |
 | **NativeBridgeTransport** | Только интерфейс | Нет ни демо-интеграции с WebView, ни документации по контракту сообщений для оболочки. |
 | **Workers** | Пусто | Хеш и разбор ZIP идут в main thread; для очень больших файлов возможны фризы UI. |
 | **EdgeTX passthrough** | Нет | В оригинальном web-flasher есть ветки EdgeTX; в нашем ядре их нет. |
-| **Betaflight SPI RX (ExpressLRS SPI)** | Нет | В web-flasher при неверном UART проверяется `rx_spi_protocol`; у нас этого нет — пользователь получает только общие ошибки конфигурации UART. |
-| **Несколько стратегий сброса с fallback** | Минимум | Реализована одна классическая DTR/RTS последовательность для direct UART; нет перебора стратегий с логированием каждой, как в расширенных сценариях esptool. |
-| **OTA endpoint** | Один шаблон | POST `multipart` на настраиваемый путь (по умолчанию `update` относительно хоста). Реальные URI на разных сборках ELRS могут отличаться — **нет автоопределения** и списка пресетов. |
+| **Betaflight SPI RX (ExpressLRS SPI)** | **Сделано** | При ошибках UART проверяется `rx_spi_protocol`; при EXPRESSLRS добавляется сообщение и ссылка на wiki SPI RX. |
+| **Несколько стратегий сброса с fallback** | **Частично** | Для direct UART: `DTR/RTS classic`, затем `RTS pulse` с паузой; обе логируются. Полного перебора режимов esptool нет. |
+| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Автоопределения по устройству нет. |
 
 ## Passthrough / CLI
 
