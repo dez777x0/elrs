@@ -1,0 +1,34 @@
+{
+  "name": "web-flasher",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "esptool-js": "^0.5.7",
+    "jszip": "^3.10.1",
+    "spark-md5": "^3.0.2",
+    "vue": "^3.5.30"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/spark-md5": "^3.0.5",
+    "@types/w3c-web-serial": "^1.0.8",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vue/tsconfig": "^0.9.0",
+    "happy-dom": "^20.0.10",
+    "typescript": "~5.9.3",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.2.5"
+  }
+}

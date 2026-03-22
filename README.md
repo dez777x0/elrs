@@ -121,6 +121,34 @@ Anyone can add an entry to the table, and entries should include the:
 
 Check the [wiki page](https://github.com/ExpressLRS/ExpressLRS/wiki/Range-Competition) for previous leaders!
 
+## Web firmware flasher (browser)
+
+В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`.
+
+### Быстрый старт
+
+```bash
+cd web-flasher
+npm install
+npm run dev
+```
+
+Сборка и проверки:
+
+```bash
+npm run lint
+npm test
+npm run build
+```
+
+### Документация
+
+- [docs/firmware-flasher-plan.md](./docs/firmware-flasher-plan.md) — план и этапы
+- [docs/transport-matrix.md](./docs/transport-matrix.md) — платформы и транспорты
+- [docs/firmware-manifest-format.md](./docs/firmware-manifest-format.md) — формат manifest в ZIP
+- [docs/hardware-limitations.md](./docs/hardware-limitations.md) — ограничения и честные ожидания
+- [docs/implementation-notes.md](./docs/implementation-notes.md) — заметки по архитектуре
+- [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff
 The use and operation of this type of device may require a license and some countries may forbid its use. It is entirely up to the end user to ensure compliance with local regulations. This is experimental software/hardware and there is no guarantee of stability or reliability. **USE AT YOUR OWN RISK**
