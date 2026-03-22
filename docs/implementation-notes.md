@@ -21,8 +21,10 @@
 
 ## Passthrough
 
-- Парсинг транскриптов CLI вынесен в чистые функции (`parseBetaflightSerialConfig`, `parseInavSerialConfig`) для unit‑тестов.
+- Парсинг вывода CLI вынесен в чистые функции в `cliParsers.ts` (например `findBetaflightRxUartIndexFromSerialLines`, баннеры INAV/BF).
 - Команда `serialpassthrough` формируется после определения UART и режима (CRSF vs GHST half‑duplex).
+
+Полный список известных пробелов: **[honest-gap.md](./honest-gap.md)**.
 
 ## Сборка и тесты
 
