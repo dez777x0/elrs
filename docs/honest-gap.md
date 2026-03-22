@@ -11,9 +11,9 @@
 | **Erase flash / полная очистка** | **Expert** | Чекбокс «Полное стирание flash (erase all)» в Expert Mode, прокидывается в esptool-js. |
 | **Сторонний JSON (sidecar) к .bin** | **Сделано (Expert)** | Отдельный выбор `.json` в Expert; при наличии manifest в ZIP sidecar игнорируется. Авто-поиск `*.json` без второго выбора файла в браузере не делался. |
 | **WebUSB в основном потоке прошивки** | **Намеренно не основной путь** | Класс `WebUSBTransport` остаётся; в UI — честные бейджи и кнопка проверки в Expert. **esptool-js** по-прежнему только через **Web Serial** (или `getSerialPortForEsptool` из native bridge). |
-| **NativeBridgeTransport** | Только интерфейс | Нет ни демо-интеграции с WebView, ни документации по контракту сообщений для оболочки. |
-| **Workers** | Пусто | Хеш и разбор ZIP идут в main thread; для очень больших файлов возможны фризы UI. |
-| **EdgeTX passthrough** | Нет | В оригинальном web-flasher есть ветки EdgeTX; в нашем ядре их нет. |
+| **NativeBridgeTransport** | **Сделано** | [native-bridge.md](./native-bridge.md), глобал, Expert UART backend, `getSerialPortForEsptool`. Демо WebView в репозитории не обязателен. |
+| **Workers** | **Частично** | SHA-256 ≥ 2 MiB в worker; разбор ZIP в main thread (JSZip). |
+| **EdgeTX passthrough** | **Сделано** | `runEdgeTxPassthrough` (обычный + backpack в Expert), режим UI «EdgeTX passthrough». |
 | **Betaflight SPI RX (ExpressLRS SPI)** | **Сделано** | При ошибках UART проверяется `rx_spi_protocol`; при EXPRESSLRS добавляется сообщение и ссылка на wiki SPI RX. |
 | **Несколько стратегий сброса с fallback** | **Частично** | Для direct UART: `DTR/RTS classic`, затем `RTS pulse` с паузой; обе логируются. Полного перебора режимов esptool нет. |
 | **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Автоопределения по устройству нет. |
@@ -31,7 +31,8 @@
 | Тема | Статус |
 |------|--------|
 | End-to-end на железе | Нет в CI (ожидаемо). |
-| Интеграция Betaflight passthrough целиком | Не доведена: был хрупкий мок; сейчас — узкие тесты + фикстуры транскриптов. |
+| Интеграция Betaflight passthrough до bootloader | **Сценарный мок** `BetaflightScriptedMock` + `passthroughBf.integration.test.ts`; парсер `get` учитывает `\r\n` (реальный вывод BF CLI). |
+| Интеграция EdgeTX (мок) | `EdgeTxScriptedMock` + `edgetx.integration.test.ts`. |
 | WebUSB / Web Serial | Нет автоматизированных тестов (нужен браузер/драйверы). |
 
 ## Платформы

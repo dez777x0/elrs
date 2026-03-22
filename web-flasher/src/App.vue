@@ -135,6 +135,7 @@ async function onProbeWebUsb(): Promise<void> {
           <label><input v-model="pathMode" type="radio" value="direct" :disabled="!canUseUartFlash" /> Прямой UART</label>
           <label><input v-model="pathMode" type="radio" value="betaflight" :disabled="!canUseUartFlash" /> Betaflight passthrough</label>
           <label><input v-model="pathMode" type="radio" value="inav" :disabled="!canUseUartFlash" /> INAV passthrough</label>
+          <label><input v-model="pathMode" type="radio" value="edgetx" :disabled="!canUseUartFlash" /> EdgeTX passthrough</label>
           <label><input v-model="pathMode" type="radio" value="ota" /> OTA / Wi‑Fi</label>
         </div>
         <div v-if="pathMode === 'ota'" class="ota">
@@ -221,6 +222,9 @@ async function onProbeWebUsb(): Promise<void> {
           <label v-if="prefs.expert.forceFlash" class="danger">
             <input v-model="forceConfirm" type="checkbox" /> Я понимаю риск окирпичивания
           </label>
+          <label v-if="pathMode === 'edgetx'"
+            >EdgeTX backpack (RF module) <input v-model="prefs.expert.edgeTxBackpack" type="checkbox" @change="persistPrefs"
+          /></label>
           <label>Half duplex (GHST) <input v-model="prefs.expert.halfDuplex" type="checkbox" @change="persistPrefs" /></label>
           <label>UART индекс (пусто = авто) <input v-model="prefs.expert.uartIndex" @change="persistPrefs" /></label>
           <label>Passthrough baud <input v-model.number="prefs.expert.passthroughBaud" type="number" @change="persistPrefs" /></label>

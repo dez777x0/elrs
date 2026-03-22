@@ -21,8 +21,9 @@
 
 ## Passthrough
 
-- Парсинг вывода CLI вынесен в чистые функции в `cliParsers.ts` (например `findBetaflightRxUartIndexFromSerialLines`, баннеры INAV/BF).
-- Команда `serialpassthrough` формируется после определения UART и режима (CRSF vs GHST half‑duplex).
+- Парсинг вывода CLI вынесен в чистые функции в `cliParsers.ts` (например `findBetaflightRxUartIndexFromSerialLines`, баннеры INAV/BF). Строки `key = value` из BF CLI часто приходят с **CRLF**; `parseBetaflightGetValue` нормализует `\r` перед разбором.
+- Команда `serialpassthrough` формируется после определения UART и режима (CRSF vs GHST half‑duplex) для Betaflight/INAV.
+- **EdgeTX:** `edgetxPassthrough.ts` — последовательность `set` / `serialpassthrough rfmod 0` (вариант backpack в Expert).
 
 Полный список известных пробелов: **[honest-gap.md](./honest-gap.md)**. Roadmap до релиза: **[release-roadmap.md](./release-roadmap.md)**.
 
@@ -35,6 +36,8 @@ npm run lint
 npm test
 npm run build
 ```
+
+В корне репозитория: GitHub Actions **`.github/workflows/web-flasher.yml`** (триггер при изменениях в `web-flasher/`).
 
 ## Workers
 

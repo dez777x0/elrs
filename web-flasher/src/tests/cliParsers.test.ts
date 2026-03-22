@@ -19,6 +19,13 @@ describe('cliParsers', () => {
     });
   });
 
+  it('parses get line with CRLF (Betaflight CLI)', () => {
+    expect(parseBetaflightGetValue('serialrx_provider = CRSF\r\n')).toEqual({
+      key: 'serialrx_provider',
+      value: 'CRSF',
+    });
+  });
+
   it('finds RX uart from betaflight fixture', () => {
     const txt = readFileSync(join(__dirname, 'fixtures/betaflight-serial.txt'), 'utf8');
     const lines = txt.split(/\r?\n/);

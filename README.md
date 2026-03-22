@@ -151,6 +151,7 @@ npm run build
 - [docs/honest-gap.md](./docs/honest-gap.md) — честный gap: что ещё не доведено до спецификации
 - [docs/release-roadmap.md](./docs/release-roadmap.md) — roadmap до релиза (вехи без дат)
 - [docs/native-bridge.md](./docs/native-bridge.md) — нативная оболочка / iOS UART
+- [docs/manual-test-checklist.md](./docs/manual-test-checklist.md) — ручной регресс на железе
 - [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff

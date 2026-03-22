@@ -8,6 +8,7 @@ import { OtaHttpTransport } from '@/core/transports/OtaHttpTransport';
 import { getPlatformCapabilities } from '@/core/transports/platformCapabilities';
 import { runBetaflightPassthrough } from '@/core/passthrough/betaflightPassthrough';
 import { runInavPassthrough } from '@/core/passthrough/inavPassthrough';
+import { runEdgeTxPassthrough } from '@/core/passthrough/edgetxPassthrough';
 import { assertFirmwareMatchesDevice } from '@/core/flash/compatibility';
 import { prepareEspLoader, writeSegmentsWithLoader } from '@/core/flash/espFlashEngine';
 import { runUartResetStrategies } from '@/core/bootloader/directUartReset';
@@ -25,7 +26,7 @@ export type FlashPhase =
   | 'done'
   | 'error';
 
-export type PathMode = 'direct' | 'betaflight' | 'inav' | 'ota';
+export type PathMode = 'direct' | 'betaflight' | 'inav' | 'edgetx' | 'ota';
 
 const LS_KEY = 'elrs-web-flasher-prefs-v1';
 
@@ -44,6 +45,8 @@ interface Prefs {
     flashWriteSize: number;
     /** Полное стирание flash перед записью (опасно) */
     eraseAll: boolean;
+    /** EdgeTX: сценарий backpack (RF модуль) */
+    edgeTxBackpack: boolean;
   };
   recent: { name: string; size: number; lastModified: number; sha256?: string }[];
 }
@@ -80,6 +83,7 @@ function defaultPrefs(): Prefs {
       resetMode: 'no_reset',
       flashWriteSize: 0,
       eraseAll: false,
+      edgeTxBackpack: false,
     },
     recent: [],
   };
@@ -127,6 +131,7 @@ export function useFlasherSession() {
     const back = prefs.value.uartBackend === 'native-bridge' ? 'Native bridge' : 'Web Serial';
     if (pathMode.value === 'betaflight') return `Betaflight passthrough (${back})`;
     if (pathMode.value === 'inav') return `INAV passthrough (${back})`;
+    if (pathMode.value === 'edgetx') return `EdgeTX passthrough (${back})`;
     if (prefs.value.uartBackend === 'web-serial' && !platform.wiredSerialLikelyWorks) {
       return 'Web Serial недоступен (платформа)';
     }
@@ -270,6 +275,15 @@ export function useFlasherSession() {
           halfDuplex: prefs.value.expert.halfDuplex,
           manualUartIndex: uartStr === '' ? undefined : parseInt(uartStr, 10),
           logger: logger.child('INAV'),
+        });
+        detectedTarget = r.rxTargetReported.trim() || undefined;
+      } else if (pathMode.value === 'edgetx') {
+        phase.value = 'passthrough';
+        const r = await runEdgeTxPassthrough(t, {
+          baud: prefs.value.expert.passthroughBaud,
+          halfDuplex: prefs.value.expert.halfDuplex,
+          backpack: prefs.value.expert.edgeTxBackpack,
+          logger: logger.child('EdgeTX'),
         });
         detectedTarget = r.rxTargetReported.trim() || undefined;
       } else {

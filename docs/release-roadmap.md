@@ -8,8 +8,9 @@
 |------|--------|
 | **Этап 0** (честный MVP) | В основном выполнен: сборка, тесты, доки, PWA; CI в репозитории — по усмотрению команды. |
 | **Этап 1 P0** | **Сделано:** таргет RX (BF/INAV), фазы verify/reboot, прогресс. |
-| **Этап 1 P1/P2** | **Частично:** erase all, sidecar JSON, пресеты пути OTA, BF SPI RX, двойной UART reset. Дальше — CI, ручной чек-лист железа, EdgeTX (если нужен). |
+| **Этап 1 P1/P2** | **Частично:** erase all, sidecar JSON, пресеты пути OTA, BF SPI RX, двойной UART reset. |
 | **Этап 2** | **Сделано:** Native bridge (док + UI + `getSerialPortForEsptool`), честный WebUSB в UI, Worker SHA-256 для больших файлов. |
+| **Этап 3** | **Сделано:** CI `web-flasher.yml`, `CHANGELOG.md`, [manual-test-checklist.md](./manual-test-checklist.md), интеграционные тесты BF/EdgeTX со сценарным моком, **EdgeTX passthrough** в ядре и UI; **исправлен** разбор строк `get … = …` с `\r\n` в `parseBetaflightGetValue`. |
 
 ---
 
@@ -20,7 +21,7 @@
 | Веха | Критерий готовности |
 |------|---------------------|
 | Документация | `honest-gap.md`, `hardware-limitations.md`, `transport-matrix.md` актуальны; в UI или README явно сказано, что не гарантируется. |
-| Сборка | `npm run lint`, `npm test`, `npm run build` проходят в CI (или в документированном скрипте). |
+| Сборка | `npm run lint`, `npm test`, `npm run build` проходят в CI: workflow [`.github/workflows/web-flasher.yml`](../.github/workflows/web-flasher.yml) при изменениях в `web-flasher/`. |
 | Версионирование | В `web-flasher/package.json` осмысленная версия (например `0.1.0`); при необходимости тег в git. |
 | PWA / деплой | Описан способ хостинга (статический хостинг, HTTPS для Serial). |
 

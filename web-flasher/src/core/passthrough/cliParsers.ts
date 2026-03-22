@@ -5,7 +5,8 @@
 export const BF_RX_SERIAL_MASK = 64;
 
 export function parseBetaflightGetValue(line: string): { key: string; value: string } | null {
-  const m = line.match(/^\s*(\S+)\s*=\s*(.+)$/);
+  const norm = line.replace(/\r/g, '').trim();
+  const m = norm.match(/^\s*(\S+)\s*=\s*(.+)$/);
   if (!m) return null;
   return { key: m[1], value: m[2].trim() };
 }

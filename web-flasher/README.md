@@ -16,7 +16,7 @@
 ## Архитектура (кратко)
 
 - `src/core/transports` — WebSerial, WebUSB (CDC bulk), OTA HTTP, Native bridge, Mock
-- `src/core/passthrough` — Betaflight / INAV CLI и ELRS bootloader init (как в ExpressLRS/web-flasher)
+- `src/core/passthrough` — Betaflight / INAV / EdgeTX CLI и ELRS bootloader init (как в ExpressLRS/web-flasher)
 - `src/core/flash` — обёртка **esptool-js**, проверка чипа vs manifest
 - `src/core/firmware` — ZIP + manifest, эвристики имён, SHA-256 / MD5
 - `src/ui` / `App.vue` — интерфейс, фазы, лог, Expert Mode
@@ -33,3 +33,5 @@
 **Roadmap до релиза:** [../docs/release-roadmap.md](../docs/release-roadmap.md).
 
 **Native bridge (оболочка / iOS):** [../docs/native-bridge.md](../docs/native-bridge.md).
+
+**История изменений:** [CHANGELOG.md](./CHANGELOG.md). Ручной регресс: [../docs/manual-test-checklist.md](../docs/manual-test-checklist.md).
