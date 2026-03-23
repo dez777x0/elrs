@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useFlasherSession } from '@/composables/useFlasherSession';
 import type { FirmwareSegment } from '@/core/firmware/parseFirmwareInput';
 
+const flasherVersion = __WEB_FLASHER_VERSION__;
 const dropActive = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const sidecarInput = ref<HTMLInputElement | null>(null);
@@ -97,6 +98,7 @@ async function onProbeWebUsb(): Promise<void> {
       <h1>ELRS Web Flasher</h1>
       <p class="sub">Локальный файл → детект → прошивка (ESP / ExpressLRS)</p>
       <div class="badges">
+        <span class="badge muted">v{{ flasherVersion }}</span>
         <span class="badge">{{ transportBadge }}</span>
         <span v-if="pathMode !== 'ota' && !canUseUartFlash" class="badge warn">UART-прошивка сейчас недоступна (Web Serial или Native bridge)</span>
         <span v-if="prefs.uartBackend === 'native-bridge' && !nativeEsptoolReady" class="badge warn">

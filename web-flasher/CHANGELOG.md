@@ -4,6 +4,24 @@
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-03-22
+
+Первый стабильный релиз **ELRS Web Flasher** (`web-flasher/`). Сводка накопленных возможностей с пре-релизов **0.1.x** и критерии см. [docs/web-flasher-release-1.0.md](../docs/web-flasher-release-1.0.md).
+
+### Включено
+
+- **Прошивка:** локальный `.bin` / `.zip` + manifest, **esptool-js** по Web Serial, проверка чипа vs метаданные, Force Flash в Expert.
+- **Passthrough:** Betaflight, INAV, EdgeTX (+ backpack), CRSF/GHST, строка таргета RX после bootloader.
+- **Транспорты:** Web Serial, WebUSB (эксперимент), OTA HTTP, Native bridge (`__ELRS_FLASHER_NATIVE__`, `getSerialPortForEsptool`).
+- **UART reset (direct):** три последовательности (classic DTR/RTS, RTS 200 ms, RTS 500 ms).
+- **Файлы:** sidecar JSON в Expert + **мультивыбор** `.bin`/`.zip` + `.json`; SHA-256 в Worker для файлов ≥ 2 MiB.
+- **UX:** PWA, фазы и лог, Expert Mode, пресеты OTA, версия в шапке UI и в manifest.
+- **Качество:** Vitest (в т.ч. сценарные моки BF/INAV/EdgeTX), CI workflow.
+
+### Известные ограничения 1.0
+
+- Не заявляется полное покрытие всех адаптеров и прошивок RX; OTA — ручной путь (см. [ota-endpoints.md](../docs/ota-endpoints.md)); ZIP разбирается в main thread; детализация внутренних шагов esptool-js в UI ограничена. Полный список: [honest-gap.md](../docs/honest-gap.md).
+
 ## [0.1.3] — 2026-03-22
 
 ### Добавлено

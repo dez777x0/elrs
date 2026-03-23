@@ -2,21 +2,23 @@
 
 Документ фиксирует **реальные** пробелы, чтобы не смешивать целевую спецификацию с уже работающим поведением. Обновляйте его при существенных изменениях в `web-flasher/`.
 
+> **Релиз `web-flasher` 1.0.0:** перечисленное ниже — это **известные ограничения и отличия** от «идеальной» спецификации. Для версии 1.0 они **не считаются скрытыми дефектами**, пока отражены здесь и в UI/доках по платформам. Детали выпуска: [web-flasher-release-1.0.md](./web-flasher-release-1.0.md).
+
 ## Критичные для «полного» acceptance criteria
 
 | Тема | Статус | Комментарий |
 |------|--------|-------------|
 | **Таргет RX после bootloader** | **Сделано для BF/INAV** | После `enterElrsBootloader` вызывается `readBootloaderTargetLine`; строка передаётся в `assertFirmwareMatchesDevice` из `useFlasherSession`. Для **direct UART** и **OTA** по-прежнему нет строки от RX (ожидаемо). Пустой ответ RX не блокирует прошивку. |
-| **Фазы verify / reboot в UI** | **Частично** | `verify` ставится после успешного `writeFlash`; `reboot` — перед `loader.after`; `done` — после `disconnect`. Детализации шагов внутри esptool-js в UI нет. |
+| **Фазы verify / reboot в UI** | **Ок для 1.0** | `verify` после успешного `writeFlash`; `reboot` перед `loader.after`; завершение после `disconnect`. Подшаги внутри esptool-js в UI **не** дублируются — при необходимости смотрите лог терминала. |
 | **Erase flash / полная очистка** | **Expert** | Чекбокс «Полное стирание flash (erase all)» в Expert Mode, прокидывается в esptool-js. |
 | **Сторонний JSON (sidecar) к .bin** | **Сделано** | Expert: отдельный выбор `.json`; основной диалог: **мультивыбор** `.bin`+`.json` (или `.zip`+`.json`). При manifest в ZIP sidecar не применяется. Сканирование папки без диалога в браузере нет. |
 | **WebUSB в основном потоке прошивки** | **Намеренно не основной путь** | Класс `WebUSBTransport` остаётся; в UI — честные бейджи и кнопка проверки в Expert. **esptool-js** по-прежнему только через **Web Serial** (или `getSerialPortForEsptool` из native bridge). |
 | **NativeBridgeTransport** | **Сделано** | [native-bridge.md](./native-bridge.md), глобал, Expert UART backend, `getSerialPortForEsptool`. Демо WebView в репозитории не обязателен. |
-| **Workers** | **Частично** | SHA-256 ≥ 2 MiB в worker; разбор ZIP в main thread (JSZip). |
+| **Workers** | **Ок для 1.0** | SHA-256 ≥ 2 MiB в worker; разбор ZIP в main thread (JSZip) — для очень больших архивов возможна пауза UI. |
 | **EdgeTX passthrough** | **Сделано** | `runEdgeTxPassthrough` (обычный + backpack в Expert), режим UI «EdgeTX passthrough». |
 | **Betaflight SPI RX (ExpressLRS SPI)** | **Сделано** | При ошибках UART проверяется `rx_spi_protocol`; при EXPRESSLRS добавляется сообщение и ссылка на wiki SPI RX. |
 | **Несколько стратегий сброса с fallback** | **Сделано (direct)** | Три шага подряд: `DTR/RTS classic` → короткий `RTS pulse` (200 ms) → длинный `RTS pulse` (500 ms), с паузами и логами. Перебор режимов **esptool** (`default_reset` / …) по очереди в коде не реализован — задаётся в Expert. |
-| **OTA endpoint** | **Частично** | Путь задаётся вручную + кнопки-пресеты (`update`, `upload`, `api/update`). Ориентиры по URL и веткам v2/v3: [ota-endpoints.md](./ota-endpoints.md). Автоопределения по устройству нет. |
+| **OTA endpoint** | **Ок для 1.0** | Путь задаётся вручную + пресеты; ориентиры v2/v3: [ota-endpoints.md](./ota-endpoints.md). Авто‑выбор пути по версии прошивки RX **не** делается. |
 
 ## Passthrough / CLI
 

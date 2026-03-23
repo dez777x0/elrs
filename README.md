@@ -123,7 +123,7 @@ Check the [wiki page](https://github.com/ExpressLRS/ExpressLRS/wiki/Range-Compet
 
 ## Web firmware flasher (browser)
 
-В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`.
+В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`. Стабильный релиз приложения: **1.0.0** (см. [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md)).
 
 ### Быстрый старт
 
@@ -149,6 +149,7 @@ npm run build
 - [docs/hardware-limitations.md](./docs/hardware-limitations.md) — ограничения и честные ожидания
 - [docs/implementation-notes.md](./docs/implementation-notes.md) — заметки по архитектуре
 - [docs/honest-gap.md](./docs/honest-gap.md) — честный gap: что ещё не доведено до спецификации
+- [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md) — релиз web-flasher 1.0.0 (сборка, тег, критерии)
 - [docs/release-roadmap.md](./docs/release-roadmap.md) — roadmap до релиза (вехи без дат)
 - [docs/native-bridge.md](./docs/native-bridge.md) — нативная оболочка / iOS UART
 - [docs/manual-test-checklist.md](./docs/manual-test-checklist.md) — ручной регресс на железе

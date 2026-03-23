@@ -8,13 +8,14 @@
 |------|--------|
 | **Этап 0** (честный MVP) | В основном выполнен: сборка, тесты, доки, PWA; CI в репозитории — по усмотрению команды. |
 | **Этап 1 P0** | **Сделано:** таргет RX (BF/INAV), фазы verify/reboot, прогресс. |
-| **Этап 1 P1/P2** | **Частично:** авто‑путь OTA по версии прошивки не делается; **сделано:** erase all, пресеты OTA + doc v2/v3, BF SPI RX, **тройной** UART reset, sidecar через **мультивыбор** или Expert (этап 7). |
+| **Этап 1 P1/P2** | **Закрыто для 1.0:** erase all, пресеты OTA + doc v2/v3, BF SPI RX, **тройной** UART reset, sidecar (Expert + мультивыбор). **Не в 1.0:** авто‑путь OTA по версии прошивки без ручного ввода. |
 | **Этап 2** | **Сделано:** Native bridge (док + UI + `getSerialPortForEsptool`), честный WebUSB в UI, Worker SHA-256 для больших файлов. |
 | **Этап 3** | **Сделано:** CI `web-flasher.yml`, `CHANGELOG.md`, [manual-test-checklist.md](./manual-test-checklist.md), интеграционные тесты BF/EdgeTX со сценарным моком, **EdgeTX passthrough** в ядре и UI; **исправлен** разбор строк `get … = …` с `\r\n` в `parseBetaflightGetValue`. |
 | **Этап 4** (pre-1.0) | **Сделано:** версия **0.1.0** в `web-flasher/package.json`, [web-flasher-deployment.md](./web-flasher-deployment.md), [ota-endpoints.md](./ota-endpoints.md), интеграционный тест **INAV** (`InavScriptedMock`). |
 | **Этап 5** | **Сделано:** ускорение passthrough CLI (`readLinesForMs` + `idleFlushMs`), тест `cliReadLines.test.ts`, ускорение мок-тестов EdgeTX (`skipHardwareDelays`); версия **0.1.1**. |
 | **Этап 6** | **Сделано:** третья стратегия **UART reset** (`tryRtsPulseLong` 500 ms) в цепочке direct mode; тесты `directUartReset.test.ts`; расширен [ota-endpoints.md](./ota-endpoints.md) (v2/v3); версия **0.1.2**. |
 | **Этап 7** | **Сделано:** **мультивыбор** прошивки + sidecar `.json` в одном диалоге / drag-drop (`partitionFirmwarePick`), тесты, правки UI и [firmware-manifest-format.md](./firmware-manifest-format.md); версия **0.1.3**. |
+| **Релиз 1.0.0** | **Выпущен** | `web-flasher/package.json` **1.0.0**; [CHANGELOG](../web-flasher/CHANGELOG.md); заметка [web-flasher-release-1.0.md](./web-flasher-release-1.0.md); критерии 1.0 выполнены (см. ниже). |
 
 ---
 
@@ -26,7 +27,7 @@
 |------|---------------------|
 | Документация | `honest-gap.md`, `hardware-limitations.md`, `transport-matrix.md` актуальны; в UI или README явно сказано, что не гарантируется. |
 | Сборка | `npm run lint`, `npm test`, `npm run build` проходят в CI: workflow [`.github/workflows/web-flasher.yml`](../.github/workflows/web-flasher.yml) при изменениях в `web-flasher/`. |
-| Версионирование | В `web-flasher/package.json` осмысленная версия (например `0.1.0`); при необходимости тег в git. |
+| Версионирование | В `web-flasher/package.json` осмысленная версия (**текущий релиз: 1.0.0**); при необходимости тег в git (см. [web-flasher-release-1.0.md](./web-flasher-release-1.0.md)). |
 | PWA / деплой | Описан способ хостинга (статический хостинг, HTTPS для Serial). |
 
 **Не блокирует MVP:** EdgeTX, WebUSB в UI, Native bridge, workers.
@@ -41,7 +42,7 @@
 | P0 | Развести фазы **verify** / **reboot** в UI по реальным событиям esptool-js (колбэки прогресса / завершения writeFlash / after reset) | **Сделано:** `FlashWriteHooks` + прогресс по сегментам. |
 | P1 | Опция **erase all** (с предупреждением) в Expert Mode, прокинуть в `writeFlash` | **Сделано** + предупреждение в сводке. |
 | P1 | **Sidecar JSON** к выбранному `.bin` (второй выбор файла или авто-поиск `*.bin.json`) с приоритетом из ТЗ | **Сделано:** второй выбор в Expert + **мультивыбор** `.bin`+`.json` в основном поле (этап 7). Сканирование папки без диалога в браузере — нет. |
-| P1 | **OTA:** пресеты путей или документированная матрица «версия ELRS → URL» + поле в UI | **Частично:** поле пути + пресеты + ориентиры v2/v3 в [ota-endpoints.md](./ota-endpoints.md); авто‑выбор пути по версии **не** делается. |
+| P1 | **OTA:** пресеты путей или документированная матрица «версия ELRS → URL» + поле в UI | **Закрыто для 1.0:** поле + пресеты + ориентиры v2/v3 в [ota-endpoints.md](./ota-endpoints.md). Авто‑выбор пути — вне scope 1.0. |
 | P2 | Несколько **стратегий сброса** DTR/RTS с логированием попыток и fallback | **Сделано:** classic → RTS 200 ms → RTS 500 ms (см. этап 6). |
 | P2 | Ветка **Betaflight SPI RX** (`rx_spi_protocol`) с понятным сообщением | **Сделано.** |
 
@@ -120,18 +121,19 @@
 
 ## Критерий «релиз 1.0.0»
 
-Считать готовым, когда одновременно:
+**Состояние на 1.0.0:** критерии выполнены.
 
-1. Закрыт **P0** из этапа 1 (таргет RX + честные фазы verify/reboot).  
-2. Документ **honest-gap** не содержит незакрытых P0/P1, которые вы сами объявили блокирующими для 1.0.  
-3. Сборка и тесты зелёные; описан способ развёртывания для пользователей.
+1. **P0** этапа 1 закрыт (таргет RX для BF/INAV/EdgeTX flow, фазы verify/reboot по событиям esptool-js).  
+2. **honest-gap** явно фиксирует оставшиеся отличия от «полной» спецификации; для 1.0 они помечены как приемлемые (см. вступление в [honest-gap.md](./honest-gap.md)).  
+3. **Сборка и тесты** — CI `web-flasher.yml`; **развёртывание** — [web-flasher-deployment.md](./web-flasher-deployment.md).
 
-Версии **0.x** допускают явные ограничения при условии, что они перечислены в `honest-gap.md` и в UI не скрываются.
+Подробности выпуска: **[web-flasher-release-1.0.md](./web-flasher-release-1.0.md)**.
 
 ---
 
 ## Связанные документы
 
 - [honest-gap.md](./honest-gap.md)  
+- [web-flasher-release-1.0.md](./web-flasher-release-1.0.md)  
 - [firmware-flasher-plan.md](./firmware-flasher-plan.md)  
 - [hardware-limitations.md](./hardware-limitations.md)

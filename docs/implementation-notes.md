@@ -2,7 +2,7 @@
 
 ## Расположение
 
-- Веб-приложение: **`web-flasher/`**
+- Веб-приложение: **`web-flasher/`** (релиз **1.0.0**; версия в UI и PWA подставляется из `package.json` при сборке через `__WEB_FLASHER_VERSION__` в Vite).
 - Ядро (без Vue): **`web-flasher/src/core/`**
 - UI: **`web-flasher/src/ui/`** (компоненты подключаются из `App.vue`)
 
