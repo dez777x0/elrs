@@ -17,15 +17,26 @@ function isJsonFile(f: File): boolean {
   return n.endsWith('.json') || f.type === 'application/json';
 }
 
+/** Прошивка: .bin или .bin.gz (не .bin.json). */
+export function isFirmwareBinLike(f: File): boolean {
+  const n = lower(f.name);
+  if (n.endsWith('.bin.gz')) return true;
+  if (n.endsWith('.bin') && !n.endsWith('.bin.json')) return true;
+  return false;
+}
+
 function pickSidecarForFirmware(firmwareName: string, jsons: File[]): File | null {
   if (jsons.length === 0) return null;
-  const wantBinJson = `${firmwareName}.json`;
-  const exact = jsons.find((j) => j.name === wantBinJson);
+  const logical =
+    lower(firmwareName).endsWith('.bin.gz') ? firmwareName.slice(0, -3) : firmwareName;
+  const wantExact = `${firmwareName}.json`;
+  const wantLogical = `${logical}.json`;
+  const exact = jsons.find((j) => j.name === wantExact || j.name === wantLogical);
   if (exact) return exact;
   if (jsons.length === 1) return jsons[0];
   const names = jsons.map((j) => j.name).join(', ');
   throw new Error(
-    `Несколько .json (${names}): оставьте один sidecar или назовите его «${firmwareName}.json» (рядом с прошивкой).`,
+    `Несколько .json (${names}): оставьте один sidecar или «${wantLogical}» / «${wantExact}».`,
   );
 }
 
@@ -46,21 +57,18 @@ export function partitionFirmwarePick(files: File[]): PartitionedFirmwarePick {
       }
       throw new Error('Один .json без прошивки: добавьте в выбор .bin или .zip.');
     }
-    if (!n.endsWith('.bin') && !n.endsWith('.zip')) {
-      throw new Error('Ожидался файл .bin или .zip прошивки.');
+    if (!isFirmwareBinLike(f) && !n.endsWith('.zip')) {
+      throw new Error('Ожидался файл .bin, .bin.gz или .zip прошивки.');
     }
     return { firmware: f, sidecar: null };
   }
 
   const zips = files.filter((f) => lower(f.name).endsWith('.zip'));
-  const bins = files.filter((f) => lower(f.name).endsWith('.bin'));
+  const bins = files.filter(isFirmwareBinLike);
   const jsons = files.filter(isJsonFile);
 
   const odd = files.filter(
-    (f) =>
-      !lower(f.name).endsWith('.zip') &&
-      !lower(f.name).endsWith('.bin') &&
-      !isJsonFile(f),
+    (f) => !lower(f.name).endsWith('.zip') && !isFirmwareBinLike(f) && !isJsonFile(f),
   );
   if (odd.length) {
     throw new Error(`Неизвестные типы в выборе: ${odd.map((x) => x.name).join(', ')}`);
@@ -73,7 +81,7 @@ export function partitionFirmwarePick(files: File[]): PartitionedFirmwarePick {
     throw new Error('Выберите не более одного .zip.');
   }
   if (bins.length > 1) {
-    throw new Error('Несколько .bin: оставьте один файл прошивки или один .zip.');
+    throw new Error('Несколько файлов прошивки (.bin / .bin.gz): оставьте один или один .zip.');
   }
 
   if (zips.length === 1) {

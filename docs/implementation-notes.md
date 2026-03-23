@@ -20,7 +20,8 @@
 
 ## Прошивка и файлы
 
-- **`partitionFirmwarePick`**: из списка файлов (multiple / drop) выделяет один `.bin`/`.zip` и опционально один `.json` sidecar.
+- **`partitionFirmwarePick`**: из списка файлов (multiple / drop) выделяет один `.bin`/`.bin.gz`/`.zip` и опционально один `.json` sidecar.
+- **`.bin.gz`:** `gunzip.ts` + `DecompressionStream`; эвристики по имени как у `.bin` после снятия `.gz`.
 
 ## Прошивка ESP
 

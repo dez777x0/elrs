@@ -4,6 +4,7 @@ import { FlashLogger } from '../logging/FlashLogger';
 import { hintsFromFilename } from './filenameHeuristics';
 import { md5Bytes, sha256BytesAuto } from './hashes';
 import { parseManifestJson, type FirmwareManifest } from './manifest';
+import { gunzipBytes, looksLikeGzip, stripGzipExtension } from './gunzip';
 import { coerceFlashOffset, parseSidecarJson, type SidecarMetadata } from './sidecar';
 import type { ScopedLogger } from '../logging/FlashLogger';
 
@@ -131,13 +132,26 @@ export async function parseFirmwareFile(
   if (name.endsWith('.zip')) {
     pkg = await tryParseZip(file, logger);
   } else {
-    const data = new Uint8Array(await file.arrayBuffer());
-    const hints = hintsFromFilename(file.name);
+    let data = new Uint8Array(await file.arrayBuffer());
+    if (name.endsWith('.bin.gz')) {
+      if (!looksLikeGzip(data)) {
+        throw new FirmwareManifestInvalidError(
+          `Файл «${file.name}» помечен как .bin.gz, но не похож на gzip (ожидались байты 1f 8b).`,
+        );
+      }
+      data = new Uint8Array(await gunzipBytes(data));
+      log.info(`Распакован gzip: ${file.name} → ${data.length} байт`);
+    } else if (looksLikeGzip(data)) {
+      data = new Uint8Array(await gunzipBytes(data));
+      log.info(`Обнаружен gzip по сигнатуре: ${file.name} → ${data.length} байт`);
+    }
+    const hintName = stripGzipExtension(file.name);
+    const hints = hintsFromFilename(hintName);
     const sha256 = await sha256BytesAuto(data);
     const md5 = md5Bytes(data);
-    log.info(`Одиночный .bin: ${file.name} (${data.length} байт)`);
+    log.info(`Одиночный образ: ${file.name} (${data.length} байт после распаковки)`);
     pkg = {
-      segments: [{ name: file.name, offset: 0, data }],
+      segments: [{ name: hintName, offset: 0, data }],
       effectiveChip: hints.chip,
       effectiveTarget: hints.target,
       effectiveVersion: hints.version,

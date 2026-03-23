@@ -119,11 +119,11 @@ async function onProbeWebUsb(): Promise<void> {
         @click="fileInput?.click()"
       >
         <p class="cta-primary">Выбрать файл прошивки</p>
-        <p class="hint">Перетащите .bin или .zip сюда, или нажмите. Можно выбрать несколько файлов: прошивка + sidecar .json (Ctrl/⌘).</p>
+        <p class="hint">Перетащите .bin, .bin.gz или .zip сюда, или нажмите. Можно выбрать несколько файлов: прошивка + sidecar .json (Ctrl/⌘).</p>
         <input
           ref="fileInput"
           type="file"
-          accept=".bin,.zip,.json,application/json"
+          accept=".bin,.bin.gz,.zip,.json,application/json,application/gzip"
           multiple
           class="hidden"
           @change="onPickFile"

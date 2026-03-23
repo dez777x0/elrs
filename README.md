@@ -123,7 +123,7 @@ Check the [wiki page](https://github.com/ExpressLRS/ExpressLRS/wiki/Range-Compet
 
 ## Web firmware flasher (browser)
 
-В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`. Стабильный релиз приложения: **1.0.0** (см. [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md)).
+В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`. Стабильная линия релизов: **1.0.x** (версия в `web-flasher/package.json`; стартовый релиз см. [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md)).
 
 **Инструкция для пользователя (установка, режимы, OTA):** [docs/web-flasher-user-guide.md](./docs/web-flasher-user-guide.md).
 

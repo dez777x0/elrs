@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-03-23
+
+### Добавлено
+
+- Поддержка прошивок **`.bin.gz`**: автоматическая распаковка gzip (Web API `DecompressionStream`), эвристики имён как у `.bin`, мультивыбор с sidecar `имя.bin.json`.
+
 ## [1.0.0] — 2026-03-22
 
 Первый стабильный релиз **ELRS Web Flasher** (`web-flasher/`). Сводка накопленных возможностей с пре-релизов **0.1.x** и критерии см. [docs/web-flasher-release-1.0.md](../docs/web-flasher-release-1.0.md).

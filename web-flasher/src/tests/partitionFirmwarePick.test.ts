@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { partitionFirmwarePick } from '@/core/firmware/partitionFirmwarePick';
+import { isFirmwareBinLike, partitionFirmwarePick } from '@/core/firmware/partitionFirmwarePick';
 
 function mockFile(name: string): File {
   return new File([], name, { lastModified: 0 });
@@ -30,7 +30,7 @@ describe('partitionFirmwarePick', () => {
   });
 
   it('отклоняет два .bin', () => {
-    expect(() => partitionFirmwarePick([mockFile('a.bin'), mockFile('b.bin')])).toThrow(/Несколько .bin/);
+    expect(() => partitionFirmwarePick([mockFile('a.bin'), mockFile('b.bin')])).toThrow(/Несколько файлов прошивки/);
   });
 
   it('отклоняет .zip и .bin вместе', () => {
@@ -45,5 +45,17 @@ describe('partitionFirmwarePick', () => {
 
   it('отклоняет только .bin.json', () => {
     expect(() => partitionFirmwarePick([mockFile('rx.bin.json')])).toThrow(/мультивыбор/);
+  });
+
+  it('.bin.gz + sidecar rx.bin.json', () => {
+    const r = partitionFirmwarePick([mockFile('rx.bin.gz'), mockFile('rx.bin.json')]);
+    expect(r.firmware.name).toBe('rx.bin.gz');
+    expect(r.sidecar?.name).toBe('rx.bin.json');
+  });
+
+  it('isFirmwareBinLike', () => {
+    expect(isFirmwareBinLike(mockFile('a.bin.gz'))).toBe(true);
+    expect(isFirmwareBinLike(mockFile('a.bin'))).toBe(true);
+    expect(isFirmwareBinLike(mockFile('a.bin.json'))).toBe(false);
   });
 });
