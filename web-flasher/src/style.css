@@ -1,0 +1,277 @@
+:root {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, system-ui, sans-serif;
+  color: #e6edf3;
+  background: #0d1117;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+.app {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+}
+
+.header h1 {
+  font-size: 1.35rem;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.sub {
+  margin: 0 0 0.75rem;
+  color: #8b949e;
+  font-size: 0.9rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #21262d;
+  border: 1px solid #30363d;
+}
+
+.badge.warn {
+  border-color: #d29922;
+  color: #d29922;
+}
+
+.badge.muted {
+  opacity: 0.7;
+}
+
+.dropzone {
+  border: 2px dashed #30363d;
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  margin: 1rem 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dropzone.active,
+.dropzone:hover {
+  border-color: #58a6ff;
+  background: #161b22;
+}
+
+.cta-primary {
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+.hidden {
+  display: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.row.spread {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #388bfd;
+  background: #1f6feb;
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: #21262d;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+
+.btn.small {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.panel h2 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8b949e;
+}
+
+.modes label {
+  display: block;
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.ota input {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.35rem;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: inherit;
+  font: inherit;
+}
+
+.ota-path {
+  display: block;
+  margin-top: 0.65rem;
+}
+
+.ota-presets {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.preset-label {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+.expert-hint {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.sidecar-name {
+  font-size: 0.75rem;
+  margin-left: 0.35rem;
+  color: #58a6ff;
+}
+
+.webusb-row {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expert-hint.inline {
+  margin: 0;
+}
+
+.summary ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.phases span {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  background: #21262d;
+  color: #6e7681;
+}
+
+.phases span.on {
+  background: #238636;
+  color: #fff;
+}
+
+.panel.error {
+  border-color: #f85149;
+}
+
+.panel.error pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  color: #ffa198;
+}
+
+.log {
+  max-height: 14rem;
+  overflow: auto;
+  margin: 0;
+  font-size: 0.7rem;
+  color: #8b949e;
+  white-space: pre-wrap;
+}
+
+.expert label {
+  display: block;
+  margin: 0.4rem 0;
+  font-size: 0.8rem;
+}
+
+.expert input[type='text'],
+.expert input[type='number'],
+.expert select {
+  margin-left: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: inherit;
+  font: inherit;
+  max-width: 12rem;
+}
+
+.danger {
+  color: #f85149;
+}
+
+code {
+  font-size: 0.85em;
+  background: #21262d;
+  padding: 0.05rem 0.25rem;
+  border-radius: 4px;
+}

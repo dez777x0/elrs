@@ -1,0 +1,10 @@
+# Betaflight / INAV CLI (пример для тестов парсера)
+
+Entering CLI Mode, type 'exit' to return, or 'help'
+
+# serial
+serial 0 1 115200 57600 0 115200 0 0 0
+serial 1 0 115200 57600 0 115200 0 0 0
+serial 2 64 115200 57600 0 115200 0 0 0
+
+#

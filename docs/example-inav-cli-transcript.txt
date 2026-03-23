@@ -1,0 +1,7 @@
+# INAV 7.0.0 (SIMULATOR)
+
+Entering CLI Mode, type 'exit' to return, or 'help'
+
+# version
+INAV 7.0.0 (SIMULATOR)
+# 

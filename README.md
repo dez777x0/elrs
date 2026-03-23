@@ -121,6 +121,44 @@ Anyone can add an entry to the table, and entries should include the:
 
 Check the [wiki page](https://github.com/ExpressLRS/ExpressLRS/wiki/Range-Competition) for previous leaders!
 
+## Web firmware flasher (browser)
+
+В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`. Стабильная линия релизов: **1.0.x** (версия в `web-flasher/package.json`; стартовый релиз см. [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md)).
+
+**Инструкция для пользователя (установка, режимы, OTA):** [docs/web-flasher-user-guide.md](./docs/web-flasher-user-guide.md).
+
+### Быстрый старт
+
+```bash
+cd web-flasher
+npm install
+npm run dev
+```
+
+Сборка и проверки:
+
+```bash
+npm run lint
+npm test
+npm run build
+```
+
+### Документация
+
+- [docs/firmware-flasher-plan.md](./docs/firmware-flasher-plan.md) — план и этапы
+- [docs/transport-matrix.md](./docs/transport-matrix.md) — платформы и транспорты
+- [docs/firmware-manifest-format.md](./docs/firmware-manifest-format.md) — формат manifest в ZIP
+- [docs/hardware-limitations.md](./docs/hardware-limitations.md) — ограничения и честные ожидания
+- [docs/implementation-notes.md](./docs/implementation-notes.md) — заметки по архитектуре
+- [docs/honest-gap.md](./docs/honest-gap.md) — честный gap: что ещё не доведено до спецификации
+- [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md) — релиз web-flasher 1.0.0 (сборка, тег, критерии)
+- [docs/release-roadmap.md](./docs/release-roadmap.md) — roadmap до релиза (вехи без дат)
+- [docs/native-bridge.md](./docs/native-bridge.md) — нативная оболочка / iOS UART
+- [docs/manual-test-checklist.md](./docs/manual-test-checklist.md) — ручной регресс на железе
+- [docs/web-flasher-deployment.md](./docs/web-flasher-deployment.md) — сборка `dist/`, HTTPS, статический хостинг
+- [docs/ota-endpoints.md](./docs/ota-endpoints.md) — типичные хосты и пути OTA
+- [docs/web-flasher-user-guide.md](./docs/web-flasher-user-guide.md) — **установка и как пользоваться**
+- [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff
 The use and operation of this type of device may require a license and some countries may forbid its use. It is entirely up to the end user to ensure compliance with local regulations. This is experimental software/hardware and there is no guarantee of stability or reliability. **USE AT YOUR OWN RISK**
