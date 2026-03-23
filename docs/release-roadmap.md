@@ -135,5 +135,6 @@
 
 - [honest-gap.md](./honest-gap.md)  
 - [web-flasher-release-1.0.md](./web-flasher-release-1.0.md)  
+- [web-flasher-user-guide.md](./web-flasher-user-guide.md) — установка и использование  
 - [firmware-flasher-plan.md](./firmware-flasher-plan.md)  
 - [hardware-limitations.md](./hardware-limitations.md)

@@ -33,3 +33,5 @@ git push origin web-flasher-v1.0.0
 ```
 
 История изменений: [web-flasher/CHANGELOG.md](../web-flasher/CHANGELOG.md).
+
+Инструкция по установке и использованию: [web-flasher-user-guide.md](./web-flasher-user-guide.md).

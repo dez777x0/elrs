@@ -4,6 +4,8 @@
 
 **Версия пакета:** `1.0.0` (`package.json`). История: [CHANGELOG.md](./CHANGELOG.md). Заметка о релизе: [../docs/web-flasher-release-1.0.md](../docs/web-flasher-release-1.0.md).
 
+**Для пользователей (установка, UART, passthrough, OTA):** [../docs/web-flasher-user-guide.md](../docs/web-flasher-user-guide.md).
+
 ## Команды
 
 | Команда | Назначение |

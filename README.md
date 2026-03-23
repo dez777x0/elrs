@@ -125,6 +125,8 @@ Check the [wiki page](https://github.com/ExpressLRS/ExpressLRS/wiki/Range-Compet
 
 В репозитории добавлено **веб-приложение** для прошивки ESP / ExpressLRS из браузера (без Electron). Оно живёт в каталоге [`web-flasher/`](./web-flasher/) и не заменяет исходники прошивки в `src/`. Стабильный релиз приложения: **1.0.0** (см. [docs/web-flasher-release-1.0.md](./docs/web-flasher-release-1.0.md)).
 
+**Инструкция для пользователя (установка, режимы, OTA):** [docs/web-flasher-user-guide.md](./docs/web-flasher-user-guide.md).
+
 ### Быстрый старт
 
 ```bash
@@ -155,6 +157,7 @@ npm run build
 - [docs/manual-test-checklist.md](./docs/manual-test-checklist.md) — ручной регресс на железе
 - [docs/web-flasher-deployment.md](./docs/web-flasher-deployment.md) — сборка `dist/`, HTTPS, статический хостинг
 - [docs/ota-endpoints.md](./docs/ota-endpoints.md) — типичные хосты и пути OTA
+- [docs/web-flasher-user-guide.md](./docs/web-flasher-user-guide.md) — **установка и как пользоваться**
 - [web-flasher/README.md](./web-flasher/README.md) — детали приложения
 
 ## Legal Stuff
